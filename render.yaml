@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: ibm-campus-pulse-backend
+    env: python
+    buildCommand: "pip install --upgrade pip setuptools wheel && pip install -r backend/requirements.txt"
+    startCommand: "gunicorn -k uvicorn.workers.UvicornWorker backend.main:app --bind 0.0.0.0:$PORT"
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.8
+      - key: MONGODB_URL
+        sync: false
+      - key: DATABASE_NAME
+        value: ibm_campus_pulse
+      - key: GEMINI_API_KEY
+        sync: false
