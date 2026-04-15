@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, MapPin, Activity, Download, Settings, X, ExternalLink } from 'lucide-react';
-import axios from 'axios';
+import api from './services/api';
 import InteractiveMap from './components/InteractiveMap';
 import TimelineChart from './components/TimelineChart';
 import DatasetUpload from './components/DatasetUpload';
@@ -59,7 +59,7 @@ const NewInsightsGrid = () => {
   });
 
   React.useEffect(() => {
-    axios.get('http://127.0.0.1:8000/api/analytics/insight-sections')
+    api.get('/api/analytics/insight-sections')
       .then(res => setData(res.data))
       .catch(err => console.error("Error fetching insights:", err));
   }, []);
@@ -120,7 +120,7 @@ const PostDetailsPanel = ({ isOpen, onClose, university, activeFilter }) => {
       if (activeFilter && activeFilter !== 'Overall Map') {
         url += `&category=${encodeURIComponent(activeFilter)}`;
       }
-      axios.get(url)
+      api.get(url)
         .then(res => setPosts(res.data))
         .catch(err => console.error(err))
         .finally(() => setLoading(false));
@@ -199,7 +199,7 @@ function App() {
 
   React.useEffect(() => {
     // Fetch global stats on load
-    axios.get('/api/analytics/global-stats')
+    api.get('/api/analytics/global-stats')
       .then(res => setGlobalStats(res.data))
       .catch(err => console.error("Error fetching stats:", err));
   }, []);
@@ -217,7 +217,7 @@ function App() {
     setIsSearching(true);
     setAiResponse(null);
     try {
-      const res = await axios.post('/api/analytics/ask', { query: searchQuery });
+      const res = await api.post('/api/analytics/ask', { query: searchQuery });
       setAiResponse(res.data.answer);
     } catch (err) {
       setAiResponse("I'm currently unable to reach the intelligence layer. Please try again.");

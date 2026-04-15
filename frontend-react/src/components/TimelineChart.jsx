@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import axios from 'axios';
+import api from '../services/api';
 
 const TimelineChart = ({ filter }) => {
   const [data, setData] = useState([]);
@@ -12,7 +12,7 @@ const TimelineChart = ({ filter }) => {
         if (filter !== 'Overall Map') {
           url += `?category=${encodeURIComponent(filter)}`;
         }
-        const res = await axios.get(url);
+        const res = await api.get(url);
         
         // Format dates correctly from string
         const formatted = res.data.map(d => {

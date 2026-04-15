@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import axios from 'axios';
+import api from '../services/api';
 
 // Fix for default Leaflet marker icons in React
 delete L.Icon.Default.prototype._getIconUrl;
@@ -36,7 +36,7 @@ const InteractiveMap = ({ activeFilter, onMarkerClick }) => {
         if (activeFilter !== 'Overall Map') {
           url += `?category=${encodeURIComponent(activeFilter)}`;
         }
-        const res = await axios.get(url);
+        const res = await api.get(url);
         setGeoData(res.data);
       } catch (err) {
         console.error("Error fetching map data:", err);

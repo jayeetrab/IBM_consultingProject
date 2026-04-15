@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, File, X, CheckCircle, AlertCircle, Loader2 } from 'lucide-react';
-import axios from 'axios';
+import api from '../services/api';
 
 const DatasetUpload = ({ onClose }) => {
   const [file, setFile] = useState(null);
@@ -44,7 +44,7 @@ const DatasetUpload = ({ onClose }) => {
 
     setStatus('uploading');
     try {
-      const response = await axios.post('/api/ingest/upload', formData, {
+      const response = await api.post('/api/ingest/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
         },

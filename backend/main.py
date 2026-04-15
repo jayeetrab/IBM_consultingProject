@@ -16,11 +16,15 @@ from backend.routers import posts, map, timeline, analytics, export, ingest
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    print("Backend starting up...")
     await init_db()
     # Only start scheduler if not on Vercel
     if not os.environ.get("VERCEL"):
+        print("Starting background scheduler...")
         start_scheduler()
+    print("Startup complete. Application ready.")
     yield
+    print("Shutting down...")
 
 app = FastAPI(
     title="IBM Campus Pulse API",
@@ -47,4 +51,8 @@ app.include_router(ingest.router,    prefix="/api/ingest",    tags=["Ingestion"]
 
 @app.get("/api/health")
 async def health_check():
-    return {"status": "ok", "environment": "vercel" if os.environ.get("VERCEL") else "local"}
+    return {
+        "status": "ok", 
+        "environment": "vercel" if os.environ.get("VERCEL") else "render" if os.environ.get("RENDER") else "local",
+        "timestamp": os.environ.get("RENDER_EXTERNAL_URL", "local")
+    }
