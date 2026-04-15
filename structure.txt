@@ -1,0 +1,57 @@
+ibm_campus_pulse/
+│
+├── backend/
+│   ├── main.py                   # FastAPI app, CORS, route registration
+│   ├── routers/
+│   │   ├── posts.py              # GET /api/posts
+│   │   ├── map.py                # GET /api/map
+│   │   ├── timeline.py           # GET /api/timeline
+│   │   ├── analytics.py          # GET /api/analytics
+│   │   ├── export.py             # GET /api/export/csv, /xlsx
+│   │   └── ingest.py             # POST /api/trigger-ingest
+│   ├── models/
+│   │   ├── schemas.py            # Pydantic response models
+│   │   └── db_models.py          # SQLAlchemy ORM
+│   ├── services/
+│   │   ├── ingestion/
+│   │   │   ├── reddit_ingestor.py
+│   │   │   └── twitter_ingestor.py
+│   │   ├── processing/
+│   │   │   ├── preprocessor.py
+│   │   │   ├── ner_extractor.py
+│   │   │   ├── classifier.py
+│   │   │   └── sentiment_analyser.py
+│   │   ├── geolocation/
+│   │   │   └── university_geocoder.py
+│   │   └── scheduler.py          # APScheduler background job
+│   ├── database/
+│   │   ├── db_manager.py
+│   │   └── connection.py
+│   └── config.py                 # Settings via pydantic-settings
+│
+├── frontend/
+│   ├── index.html                # Dashboard shell
+│   ├── css/
+│   │   ├── ibm-design.css        # IBM Carbon-inspired tokens
+│   │   └── dashboard.css         # Layout, cards, sidebar
+│   ├── js/
+│   │   ├── api.js                # Centralised fetch wrapper
+│   │   ├── map.js                # Leaflet.js map rendering
+│   │   ├── charts.js             # Chart.js timeline & analytics
+│   │   ├── filters.js            # Sidebar filter logic
+│   │   └── export.js             # CSV/Excel download trigger
+│   └── assets/
+│       └── ibm-logo.svg
+│
+├── tests/
+│   ├── test_api.py
+│   ├── test_ner.py
+│   └── test_classifier.py
+│
+├── docs/
+│   ├── architecture_diagram.png
+│   └── api_reference.md
+│
+├── .env.example
+├── requirements.txt
+└── README.md

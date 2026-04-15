@@ -1,0 +1,49 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "api/index.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "api/health.py",
+      "use": "@vercel/python"
+    },
+    {
+      "src": "frontend-react/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "dist" }
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/health-test",
+      "dest": "api/health.py"
+    },
+    {
+      "src": "/api/(.*)",
+      "dest": "api/index.py"
+    },
+    {
+      "src": "/static/(.*)",
+      "dest": "/frontend-react/static/$1"
+    },
+    {
+      "src": "/assets/(.*)",
+      "dest": "/frontend-react/assets/$1"
+    },
+    {
+      "src": "/favicon.ico",
+      "dest": "/frontend-react/favicon.ico"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend-react/$1",
+      "check": true
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/frontend-react/index.html"
+    }
+  ]
+}

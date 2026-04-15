@@ -1,0 +1,205 @@
+./.DS_Store
+
+
+===== FILE: ./frontend/index.html
+
+
+===== FILE: ./frontend/css/dashboard.css
+
+
+===== FILE: ./frontend/css/ibm-design.css
+
+
+===== FILE: ./frontend/js/export.js
+
+
+===== FILE: ./frontend/js/charts.js
+
+
+===== FILE: ./frontend/js/filters.js
+
+
+===== FILE: ./frontend/js/api.js
+
+
+===== FILE: ./frontend/js/map.js
+
+
+===== FILE: ./frontend/project_dump.txt
+
+
+===== FILE: ./frontend/assets/ibm-logo.svg
+
+
+===== FILE: ./requirements.txt
+
+
+===== FILE: ./tests/test_api.py
+
+
+===== FILE: ./tests/test_ner.py
+
+
+===== FILE: ./tests/test_classifier.py
+
+
+===== FILE: ./codebase_dump1.txt
+
+
+===== FILE: ./backend/routers/ingest.py
+
+
+===== FILE: ./backend/routers/timeline.py
+
+
+===== FILE: ./backend/routers/posts.py
+
+
+===== FILE: ./backend/routers/__pycache__/map.cpython-312.pyc
+
+
+===== FILE: ./backend/routers/__pycache__/posts.cpython-312.pyc
+
+
+===== FILE: ./backend/routers/__pycache__/analytics.cpython-312.pyc
+
+
+===== FILE: ./backend/routers/__pycache__/timeline.cpython-312.pyc
+
+
+===== FILE: ./backend/routers/__pycache__/export.cpython-312.pyc
+
+
+===== FILE: ./backend/routers/__pycache__/ingest.cpython-312.pyc
+
+
+===== FILE: ./backend/routers/export.py
+
+
+===== FILE: ./backend/routers/map.py
+
+
+===== FILE: ./backend/routers/analytics.py
+
+
+===== FILE: ./backend/database/db_manager.py
+
+
+===== FILE: ./backend/database/__pycache__/db_manager.cpython-312.pyc
+
+
+===== FILE: ./backend/database/__pycache__/connection.cpython-312.pyc
+
+
+===== FILE: ./backend/database/connection.py
+
+
+===== FILE: ./backend/config.py
+
+
+===== FILE: ./backend/models/__pycache__/schemas.cpython-312.pyc
+
+
+===== FILE: ./backend/models/__pycache__/db_models.cpython-312.pyc
+
+
+===== FILE: ./backend/models/schemas.py
+
+
+===== FILE: ./backend/models/db_models.py
+
+
+===== FILE: ./backend/__pycache__/main.cpython-312.pyc
+
+
+===== FILE: ./backend/__pycache__/config.cpython-312.pyc
+
+
+===== FILE: ./backend/main.py
+
+
+===== FILE: ./backend/services/ingestion/reddit_ingestor.py
+
+
+===== FILE: ./backend/services/ingestion/__pycache__/reddit_ingestor.cpython-312.pyc
+
+
+===== FILE: ./backend/services/ingestion/__pycache__/twitter_ingestor.cpython-312.pyc
+
+
+===== FILE: ./backend/services/ingestion/news_ingestor.py
+
+
+===== FILE: ./backend/services/ingestion/twitter_ingestor.py
+
+
+===== FILE: ./backend/services/processing/keyword_extractor.py
+
+
+===== FILE: ./backend/services/processing/classifier.py
+
+
+===== FILE: ./backend/services/processing/sentiment_analyser.py
+
+
+===== FILE: ./backend/services/processing/preprocessor.py
+
+
+===== FILE: ./backend/services/processing/__pycache__/sentiment_analyser.cpython-312.pyc
+
+
+===== FILE: ./backend/services/processing/__pycache__/preprocessor.cpython-312.pyc
+
+
+===== FILE: ./backend/services/processing/__pycache__/classifier.cpython-312.pyc
+
+
+===== FILE: ./backend/services/processing/__pycache__/ner_extractor.cpython-312.pyc
+
+
+===== FILE: ./backend/services/processing/__pycache__/keyword_extractor.cpython-312.pyc
+
+
+===== FILE: ./backend/services/processing/ner_extractor.py
+
+
+===== FILE: ./backend/services/__pycache__/scheduler.cpython-312.pyc
+
+
+===== FILE: ./backend/services/geolocation/__pycache__/university_geocoder.cpython-312.pyc
+
+
+===== FILE: ./backend/services/geolocation/uk_ireland_universities.json
+
+
+===== FILE: ./backend/services/geolocation/university_geocoder.py
+
+
+===== FILE: ./backend/services/scheduler.py
+
+
+===== FILE: ./docs/api_reference.md
+
+
+===== FILE: ./docs/architecture_diagram.png
+
+
+===== FILE: ./README.md
+
+
+===== FILE: ./.env
+
+
+===== FILE: ./project_dump.txt
+
+
+===== FILE: ./structure.txt
+
+
+===== FILE: ./seed_data.py
+
+
+===== FILE: ./ibm_campus_pulse.db
+
+
+===== FILE: 
