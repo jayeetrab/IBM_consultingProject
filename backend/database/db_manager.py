@@ -314,16 +314,18 @@ async def ask_natural_language(query_text: str) -> dict:
         # 1. Fetch context data from our database
         total_posts = await posts_collection.count_documents({})
         
-        # New Categories
-        ai_posts = await posts_collection.count_documents({"keywords.matched_categories": "AI"})
-        data_science_posts = await posts_collection.count_documents({"keywords.matched_categories": "Data Science"})
-        design_thinking_posts = await posts_collection.count_documents({"keywords.matched_categories": "Design Thinking"})
-        ai_law_posts = await posts_collection.count_documents({"keywords.matched_categories": "AI and Law"})
-        skillsbuild_posts = await posts_collection.count_documents({"keywords.matched_categories": "IBM SkillsBuild"})
-        hackathon_posts = await posts_collection.count_documents({"keywords.matched_categories": "Hackathons"})
-        open_source_posts = await posts_collection.count_documents({"keywords.matched_categories": "Open Source"})
-        society_posts = await posts_collection.count_documents({"keywords.matched_categories": "Student Societies"})
-        outreach_posts = await posts_collection.count_documents({"keywords.matched_categories": "Outreach Events"})
+        # New Categories - checking both old schema (keywords) and new schema (category)
+        def build_q(name): return {"$or": [{"keywords.matched_categories": name}, {"category": name}]}
+        
+        ai_posts = await posts_collection.count_documents(build_q("AI"))
+        data_science_posts = await posts_collection.count_documents(build_q("Data Science"))
+        design_thinking_posts = await posts_collection.count_documents(build_q("Design Thinking"))
+        ai_law_posts = await posts_collection.count_documents(build_q("AI and Law"))
+        skillsbuild_posts = await posts_collection.count_documents(build_q("IBM SkillsBuild"))
+        hackathon_posts = await posts_collection.count_documents(build_q("Hackathons"))
+        open_source_posts = await posts_collection.count_documents(build_q("Open Source"))
+        society_posts = await posts_collection.count_documents(build_q("Student Societies"))
+        outreach_posts = await posts_collection.count_documents(build_q("Outreach Events"))
         
         top_unis = await get_top_universities(limit=5)
         uni_context = ", ".join([f"{u['university']} ({u['post_count']} posts)" for u in top_unis]) if top_unis else "No data yet."

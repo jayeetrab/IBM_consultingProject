@@ -4,14 +4,28 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 
-# Add parent directory to path so 'backend.xxx' imports work
+# Add parent/current directory to path so 'backend.xxx' imports work
 current_dir = os.path.dirname(os.path.abspath(__file__))
 parent_dir = os.path.dirname(current_dir)
-if parent_dir not in sys.path:
-    sys.path.append(parent_dir)
 
-from backend.database.connection import init_db
-from backend.services.scheduler import start_scheduler
+# If we are running from inside the 'backend' folder, we need to ensure
+# that 'from backend.xxx' still works.
+if os.path.basename(current_dir) == "backend":
+    if parent_dir not in sys.path:
+        sys.path.append(parent_dir)
+else:
+    # We might be at the root of the project, or in a standalone deploy
+    if current_dir not in sys.path:
+        sys.path.append(current_dir)
+
+try:
+    from backend.database.connection import init_db
+    from backend.services.scheduler import start_scheduler
+except ImportError:
+    # Fallback for standalone deployment where 'backend' prefix isn't available
+    from database.connection import init_db
+    from services.scheduler import start_scheduler
+
 from backend.routers import posts, map, timeline, analytics, export, ingest
 
 @asynccontextmanager

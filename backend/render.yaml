@@ -1,10 +1,11 @@
 services:
-  # 1. Backend Service (FastAPI)
+  # Standalone Backend Service (FastAPI)
+  # NOTE: To use this, set "Root Directory" to "backend" in Render settings.
   - type: web
     name: ibm-campus-pulse-backend
     env: python
-    buildCommand: "pip install --upgrade pip setuptools wheel && pip install -r backend/requirements.txt"
-    startCommand: "gunicorn -k uvicorn.workers.UvicornWorker backend.main:app --bind 0.0.0.0:$PORT"
+    buildCommand: "python -m pip install --upgrade pip setuptools wheel && pip install -r requirements.txt"
+    startCommand: "gunicorn -k uvicorn.workers.UvicornWorker main:app --bind 0.0.0.0:$PORT"
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.8
@@ -14,23 +15,3 @@ services:
         value: ibm_campus_pulse
       - key: GEMINI_API_KEY
         sync: false
-
-  # 2. Frontend Service (Vite React)
-  - type: web
-    name: ibm-campus-pulse-frontend
-    env: static
-    buildCommand: "cd frontend-react && npm install && npm run build"
-    staticPublishDir: "frontend-react/dist"
-    envVars:
-      - key: VITE_API_URL
-        fromService:
-          name: ibm-campus-pulse-backend
-          type: web
-          property: host
-    routes:
-      - type: rewrite
-        source: "/api/*"
-        destination: "https://ibm-campus-pulse-backend.onrender.com/api/*" # Fallback if direct linking fails
-      - type: rewrite
-        source: "/*"
-        destination: "/index.html"
