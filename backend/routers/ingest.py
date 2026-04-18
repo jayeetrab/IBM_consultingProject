@@ -1,5 +1,5 @@
 from fastapi import APIRouter, BackgroundTasks, UploadFile, File, HTTPException
-import pandas as pd
+import csv
 import io
 import json
 from datetime import datetime
@@ -10,14 +10,17 @@ from backend.database.db_manager import save_posts
 
 router = APIRouter()
 
+def _is_valid(v):
+    return v is not None and str(v).strip() != '' and str(v).lower() != 'nan'
+
 async def process_uploaded_data(data: list[dict], is_ibm_open_data: bool = False):
     """Background task to process and save uploaded data."""
     try:
         if is_ibm_open_data:
             enriched = []
             for idx, item in enumerate(data):
-                # Clean up NaN values which cause JSON/DB errors
-                item = {k: v for k, v in item.items() if pd.notna(v)}
+                # Clean up invalid values
+                item = {k: v for k, v in item.items() if _is_valid(v)}
                 
                 geo_data = {}
                 uni_raw = item.get("university_canonical")
@@ -26,7 +29,7 @@ async def process_uploaded_data(data: list[dict], is_ibm_open_data: bool = False
                     for u in unis:
                         lat = item.get("latitude")
                         lon = item.get("longitude")
-                        if lat is not None and lon is not None:
+                        if _is_valid(lat) and _is_valid(lon):
                             try:
                                 geo_data[u] = {
                                     "lat": float(lat),
@@ -42,7 +45,7 @@ async def process_uploaded_data(data: list[dict], is_ibm_open_data: bool = False
                 except: sentiment_score = 0.0
                 
                 tech_theme = str(item.get("tech_theme_standard", ""))
-                if not tech_theme or tech_theme.lower() == 'nan':
+                if not _is_valid(tech_theme):
                     tech_theme = str(item.get("event_type_standard", "unknown"))
                     
                 try: score = int(float(item.get("engagement_score_standardized", 0)) * 100)
@@ -50,7 +53,14 @@ async def process_uploaded_data(data: list[dict], is_ibm_open_data: bool = False
                 
                 dt_str = item.get("created_at")
                 try:
-                    ct = pd.to_datetime(dt_str).to_pydatetime() if dt_str else datetime.utcnow()
+                    if _is_valid(dt_str):
+                        # Simple naive parsing for safety
+                        if 'T' in str(dt_str):
+                            ct = datetime.fromisoformat(str(dt_str).replace('Z', '+00:00'))
+                        else:
+                            ct = datetime.strptime(str(dt_str).split()[0], "%Y-%m-%d")
+                    else:
+                        ct = datetime.utcnow()
                 except:
                     ct = datetime.utcnow()
                 
@@ -101,29 +111,42 @@ async def upload_dataset(background_tasks: BackgroundTasks, file: UploadFile = F
     try:
         contents = await file.read()
         is_ibm = False
+        data = []
         
         if file.filename.endswith(('.csv', '.tsv')):
             separator = '\t' if file.filename.endswith('.tsv') else ','
-            df = pd.read_csv(io.BytesIO(contents), sep=separator)
+            
+            # Parse using standard csv module
+            decoded = contents.decode('utf-8')
+            reader = csv.DictReader(io.StringIO(decoded), delimiter=separator)
+            
+            if not reader.fieldnames:
+                raise HTTPException(status_code=400, detail="Empty or invalid CSV/TSV file.")
+                
+            fieldnames = reader.fieldnames
             
             # Detect IBM Open Data schema
-            if 'canonical_record_key' in df.columns or 'tech_theme_standard' in df.columns:
+            if 'canonical_record_key' in fieldnames or 'tech_theme_standard' in fieldnames:
                 is_ibm = True
+                data = list(reader)
             else:
                 # Ensure required columns exist for old schema
-                if 'text' not in df.columns:
-                    text_cols = [c for c in df.columns if 'text' in c.lower() or 'content' in c.lower() or 'msg' in c.lower()]
-                    if text_cols:
-                        df = df.rename(columns={text_cols[0]: 'text'})
-                    else:
+                if 'text' not in fieldnames:
+                    text_cols = [c for c in fieldnames if 'text' in c.lower() or 'content' in c.lower() or 'msg' in c.lower()]
+                    if not text_cols:
                         raise HTTPException(status_code=400, detail="CSV must contain a 'text' column or be in IBM Open Data format.")
-                
-                if 'source' not in df.columns:
-                    df['source'] = 'uploaded_dataset'
-                if 'id' not in df.columns:
-                    df['id'] = [f"up_{i}_{int(datetime.now().timestamp())}" for i in range(len(df))]
-            
-            data = df.to_dict(orient='records')
+                    
+                    # Need to rename keys for legacy data
+                    for row in reader:
+                        row['text'] = row.pop(text_cols[0])
+                        row['source'] = row.get('source', 'uploaded_dataset')
+                        row['id'] = row.get('id', f"up_{int(datetime.now().timestamp())}")
+                        data.append(row)
+                else:
+                    for row in reader:
+                        row['source'] = row.get('source', 'uploaded_dataset')
+                        row['id'] = row.get('id', f"up_{int(datetime.now().timestamp())}")
+                        data.append(row)
             
         else: # JSON
             data = json.loads(contents)
