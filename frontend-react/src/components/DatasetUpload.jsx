@@ -72,7 +72,7 @@ const DatasetUpload = ({ onClose }) => {
         style={{ 
           position: 'absolute', top: '-10px', right: '-10px', 
           background: 'var(--bg-secondary)', border: '1px solid var(--border-light)',
-          borderRadius: '50%', padding: '4px', cursor: 'pointer', z-index: 10
+          borderRadius: '50%', padding: '4px', cursor: 'pointer', zIndex: 10
         }}
       >
         <X size={16} />
