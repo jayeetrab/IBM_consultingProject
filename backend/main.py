@@ -26,7 +26,7 @@ except ImportError:
     from database.connection import init_db
     from services.scheduler import start_scheduler
 
-from backend.routers import posts, map, timeline, analytics, export, ingest
+from backend.routers import posts, map, timeline, analytics, export, ingest, auth
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -62,6 +62,7 @@ app.include_router(timeline.router,  prefix="/api/timeline",  tags=["Timeline"])
 app.include_router(analytics.router, prefix="/api/analytics", tags=["Analytics"])
 app.include_router(export.router,    prefix="/api/export",    tags=["Export"])
 app.include_router(ingest.router,    prefix="/api/ingest",    tags=["Ingestion"])
+app.include_router(auth.router,      prefix="/api/auth",      tags=["Auth"])
 
 @app.get("/api/health")
 async def health_check():

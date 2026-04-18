@@ -302,16 +302,34 @@ async def get_university_posts(university: str, limit: int = 20, category: Optio
     return posts
 
 
+import time
+import httpx
+
+_query_cache = {}
+CACHE_TTL = 300  # Cache for 5 minutes
+
 async def ask_natural_language(query_text: str) -> dict:
     """
     Advanced LLM Integration: Uses Gemini 2.5 Flash to provide dynamic, intelligent answers 
-    based on the real-time data from MongoDB.
+    based on the real-time data from MongoDB. Protected by an in-memory cache against 429s.
     """
     if not settings.gemini_api_key or settings.gemini_api_key == "your_gemini_api_key_here":
         return {"answer": "The intelligence layer (Gemini API) is not configured. Please add your free GEMINI_API_KEY to the .env file."}
     
+    query_key = query_text.strip().lower()
+    
+    # 1. Check LRU Cache to prevent 429 Too Many Requests
+    if query_key in _query_cache:
+        cached_time, cached_result = _query_cache[query_key]
+        if time.time() - cached_time < CACHE_TTL:
+            return {"answer": cached_result}
+            
+    # Clean up old cache entries if it gets too large
+    if len(_query_cache) > 100:
+        _query_cache.clear()
+
     try:
-        # 1. Fetch context data from our database
+        # 2. Fetch context data from our database
         total_posts = await posts_collection.count_documents({})
         
         # New Categories - checking both old schema (keywords) and new schema (category)
@@ -333,7 +351,7 @@ async def ask_natural_language(query_text: str) -> dict:
         sentiment_summary = await get_sentiment_summary()
         sentiment_context = ", ".join([f"{s['label']}: {s['count']}" for s in sentiment_summary]) if sentiment_summary else "No data yet."
 
-        # 2. Construct Prompt Payload
+        # 3. Construct Prompt Payload
         prompt = f"""You are the advanced AI assistant built for the "IBM Campus Pulse" dashboard. 
 Your goal is to answer the user's query intelligently, concisely, and professionally. 
 You MUST base your statistical answers strictly on the following real-time ingested data from our database:
@@ -356,7 +374,7 @@ User Query: "{query_text}"
 Provide a highly polished, short response formatted nicely with markdown (e.g., use bold text). Do not hallucinate numbers outside the context provided.
 """
 
-        # 3. Request Gemini Response (Direct HTTP)
+        # 4. Request Gemini Response (Direct HTTP)
         url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={settings.gemini_api_key}"
         
         payload = {
@@ -372,7 +390,15 @@ Provide a highly polished, short response formatted nicely with markdown (e.g., 
             
             # Extract content from Gemini response
             answer_text = data['candidates'][0]['content']['parts'][0]['text']
+            
+            # Save to Cache!
+            _query_cache[query_key] = (time.time(), answer_text)
+            
             return {"answer": answer_text}
-    
+            
+    except httpx.HTTPStatusError as exc:
+        if exc.response.status_code == 429:
+            return {"answer": "The intelligence layer is currently receiving extremely high traffic (API Quota Exceeded). Please try asking again in 1 minute."}
+        return {"answer": f"System error communicating with the intelligence layer: {str(exc)}"}
     except Exception as e:
         return {"answer": f"System error communicating with the intelligence layer: {str(e)}"}

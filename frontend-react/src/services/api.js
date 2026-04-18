@@ -11,7 +11,16 @@ const api = axios.create({
   },
 });
 
-// Optional: Add request/response interceptors here for better error handling
+// Add request interceptor to attach JWT Token
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('ibm_token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
+// Add response interceptors here for better error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {

@@ -10,6 +10,7 @@ db = client[settings.database_name]
 # Collections
 posts_collection = db["posts"]
 geo_collection = db["geo_engagements"]
+users_collection = db["users"]
 
 async def init_db():
     print("Initializing database connection...")
@@ -21,6 +22,7 @@ async def init_db():
         # Create unique index to avoid duplicate inserts
         await posts_collection.create_index([("source", 1), ("external_id", 1)], unique=True)
         await geo_collection.create_index([("post_id", 1)])
+        await users_collection.create_index([("email", 1)], unique=True)
         print("Database indexes verified.")
     except Exception as e:
         print(f"CRITICAL: Database connection failed: {e}")
