@@ -58,8 +58,10 @@ async def login_user(user: UserLogin):
     
     # Create token
     access_token_expires = timedelta(minutes=60 * 24) # 24 hrs
+    
+    user_name = db_user.get("name", "User")
     access_token = create_access_token(
-        data={"sub": db_user["email"], "name": db_user["name"]}, 
+        data={"sub": db_user["email"], "name": user_name}, 
         expires_delta=access_token_expires
     )
     
@@ -67,7 +69,7 @@ async def login_user(user: UserLogin):
         "access_token": access_token, 
         "token_type": "bearer",
         "user": {
-            "name": db_user["name"],
+            "name": user_name,
             "email": db_user["email"]
         }
     }

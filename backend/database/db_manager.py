@@ -113,8 +113,8 @@ async def get_geo_engagements(region: Optional[str] = None, category: Optional[s
     # Define the grouping key dynamically
     group_id = {
         "university": "$university",
-        "latitude": "$latitude",
-        "longitude": "$longitude",
+        "latitude": "$lat",
+        "longitude": "$lon",
         "region": "$region",
         "country": "$country"
     }
@@ -140,8 +140,8 @@ async def get_geo_engagements(region: Optional[str] = None, category: Optional[s
     async for row in cursor:
         results.append({
             "university": row["_id"]["university"],
-            "latitude": row["_id"]["latitude"],
-            "longitude": row["_id"]["longitude"],
+            "latitude": row["_id"].get("latitude", 0),
+            "longitude": row["_id"].get("longitude", 0),
             "region": row["_id"]["region"],
             "country": row["_id"]["country"],
             "category": row["_id"]["category"],
@@ -176,8 +176,12 @@ async def get_timeline_data(date_from=None, date_to=None, category=None) -> list
         elif "category" in p:
             cat = p["category"]
             
+        dt = p.get("created_at")
+        if not dt:
+            dt = datetime.utcnow()
+            
         df_data.append({
-            "date": p["created_at"].strftime("%Y-%m-%d"),
+            "date": dt.strftime("%Y-%m-%d"),
             "category": cat
         })
         
