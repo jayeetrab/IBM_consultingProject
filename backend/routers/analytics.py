@@ -37,11 +37,11 @@ async def get_global_stats():
     total = await posts_collection.count_documents({})
     
     # Track exactly what the user wants to see easily
-    design_thinking = await posts_collection.count_documents({"keywords.matched_categories": "Design Thinking"})
-    ai_data = await posts_collection.count_documents({"keywords.matched_categories": {"$in": ["AI", "Data Science"]}})
-    skills_build = await posts_collection.count_documents({"keywords.matched_categories": "IBM SkillsBuild"})
-    hackathons = await posts_collection.count_documents({"keywords.matched_categories": "Hackathons"})
-    open_source = await posts_collection.count_documents({"keywords.matched_categories": "Open Source"})
+    design_thinking = await posts_collection.count_documents({"category": "Design Thinking"})
+    ai_data = await posts_collection.count_documents({"category": {"$in": ["AI", "Data Science"]}})
+    skills_build = await posts_collection.count_documents({"category": "IBM SkillsBuild"})
+    hackathons = await posts_collection.count_documents({"category": "Hackathons"})
+    open_source = await posts_collection.count_documents({"category": "Open Source"})
     
     # Calculate a mock trajectory for the UI
     trajectory = "+14.2%" if total > 100 else "+5.1%"
@@ -65,7 +65,7 @@ async def get_insight_sections():
     # Tech Interest: Top Universities for specific categories
     tech_cats = ["Design Thinking", "AI", "Data Science", "AI and Law"]
     pipeline_tech = [
-        {"$match": {"keywords.matched_categories": {"$in": tech_cats}}},
+        {"$match": {"category": {"$in": tech_cats}}},
         {"$unwind": "$universities"},
         {"$group": {"_id": "$universities", "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},
@@ -76,7 +76,7 @@ async def get_insight_sections():
     # Active Locations: Societies, Hackathons, Outreach
     active_cats = ["Student Societies", "Hackathons", "Outreach Events"]
     pipeline_active = [
-        {"$match": {"keywords.matched_categories": {"$in": active_cats}}},
+        {"$match": {"category": {"$in": active_cats}}},
         {"$unwind": "$universities"},
         {"$group": {"_id": "$universities", "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},
@@ -87,7 +87,7 @@ async def get_insight_sections():
     # Community Correlation: SkillsBuild, Open Source
     comm_cats = ["IBM SkillsBuild", "Open Source"]
     pipeline_comm = [
-        {"$match": {"keywords.matched_categories": {"$in": comm_cats}}},
+        {"$match": {"category": {"$in": comm_cats}}},
         {"$unwind": "$universities"},
         {"$group": {"_id": "$universities", "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},

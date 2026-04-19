@@ -79,6 +79,7 @@ async def save_posts(posts: list[dict]):
                     "country": geo["country"],
                     "category": p.get("category", "unknown"),
                     "sentiment": p.get("sentiment", {}).get("label", "neutral"),
+                    "post_count": 1,
                     "created_at": p.get("created_at", datetime.utcnow())
                 })
                 
@@ -153,7 +154,7 @@ async def get_geo_engagements(region: Optional[str] = None, category: Optional[s
 async def get_timeline_data(date_from=None, date_to=None, category=None) -> list[dict]:
     query = {}
     if category and category != "Overall Map":
-        query["keywords.matched_categories"] = category
+        query["category"] = category
     if date_from or date_to:
         query["created_at"] = {}
         if date_from:
@@ -161,7 +162,7 @@ async def get_timeline_data(date_from=None, date_to=None, category=None) -> list
         if date_to:
             query["created_at"]["$lte"] = datetime.combine(date_to, datetime.max.time())
             
-    cursor = posts_collection.find(query, {"created_at": 1, "keywords.matched_categories": 1, "category": 1})
+    cursor = posts_collection.find(query, {"created_at": 1, "category": 1})
     posts = await cursor.to_list(length=None)
     
     if not posts:

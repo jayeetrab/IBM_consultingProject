@@ -299,20 +299,32 @@ function Dashboard() {
   const openProfile = () => {
     openModal('My Profile', (
       <div style={{ padding: '1rem 0' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
-          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-blue), #5294ff)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '1.5rem', fontWeight: 700 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', marginBottom: '2rem' }}>
+          <div style={{ width: '80px', height: '80px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-blue), #5294ff)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '2rem', fontWeight: 700, boxShadow: '0 8px 16px rgba(15, 98, 254, 0.2)' }}>
             {user.name.charAt(0).toUpperCase()}
           </div>
           <div>
-            <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>{user.name}</div>
-            <div style={{ color: 'var(--text-secondary)' }}>{user.email}</div>
+            <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>{user.name}</div>
+            <div style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>{user.email}</div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(52, 199, 89, 0.1)', color: '#34c759', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700, marginTop: '8px', textTransform: 'uppercase' }}>
+              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#34c759' }}></div>
+              Active Tier
+            </div>
           </div>
         </div>
-        <div style={{ background: 'var(--bg-primary)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
-          <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', fontWeight: 700 }}>Account Status</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#34c759', fontWeight: 600 }}>
-            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34c759' }}></div>
-            Active Intelligence Tier
+        
+        <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem', marginTop: '1.5rem' }}>
+          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Security Settings</div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <div style={{ background: 'var(--bg-primary)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 500, fontSize: '0.95rem' }}>Change Password</span>
+              <button className="nav-btn" style={{ color: 'var(--accent-blue)' }}>Edit</button>
+            </div>
+            <div style={{ background: 'var(--bg-primary)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontWeight: 500, fontSize: '0.95rem' }}>Two-Factor Authentication</span>
+              <button className="nav-btn" style={{ color: 'var(--text-tertiary)' }}>Disabled</button>
+            </div>
           </div>
         </div>
       </div>
@@ -322,9 +334,40 @@ function Dashboard() {
 
   const openSettings = () => {
     openModal('Platform Settings', (
-      <div style={{ padding: '1rem 0', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-        <p style={{ color: 'var(--text-secondary)' }}>Configure global alert sensitivity and dataset caching rules.</p>
-        <button className="nav-btn-primary" onClick={() => setModalOpen(false)}>Save Preferences</button>
+      <div style={{ padding: '1rem 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '0.5rem' }}>Customize your analytical workspace and privacy rules.</p>
+        
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border-light)' }}>
+          <div>
+            <div style={{ fontWeight: 600 }}>Email Notifications</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>Receive alerts for critical sentiment drops</div>
+          </div>
+          <div style={{ width: '44px', height: '24px', background: 'var(--accent-blue)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
+             <div style={{ position: 'absolute', top: '2px', right: '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%' }}></div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border-light)' }}>
+          <div>
+            <div style={{ fontWeight: 600 }}>Daily Digest Reports</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>Sent at 08:00 AM UTC</div>
+          </div>
+          <div style={{ width: '44px', height: '24px', background: 'var(--border-strong)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
+             <div style={{ position: 'absolute', top: '2px', left: '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%' }}></div>
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0' }}>
+          <div>
+            <div style={{ fontWeight: 600 }}>Data Anonymization</div>
+            <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>Hide explicit names from analytical extracts</div>
+          </div>
+          <div style={{ width: '44px', height: '24px', background: 'var(--accent-blue)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
+             <div style={{ position: 'absolute', top: '2px', right: '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%' }}></div>
+          </div>
+        </div>
+
+        <button className="nav-btn-primary" onClick={() => setModalOpen(false)} style={{ marginTop: '1rem' }}>Save & Apply</button>
       </div>
     ));
     setDropdownOpen(false);
@@ -350,14 +393,6 @@ function Dashboard() {
             onClick={() => openModal('Upload Dataset', <DatasetUpload onClose={() => setModalOpen(false)} />)}
           >
             <Upload size={16} /> Upload
-          </button>
-          
-          <button 
-            className="nav-btn" 
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f5a623' }}
-            onClick={() => openModal('System Audit Trail', <AuditLogViewer />)}
-          >
-            <ShieldAlert size={16} /> Audit Logs
           </button>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.03)', padding: '4px 8px', borderRadius: '8px' }}>
@@ -409,6 +444,12 @@ function Dashboard() {
                     {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />} 
                     {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
                   </button>
+                  
+                  {user.email === 'admin' && (
+                    <button className="dropdown-item" onClick={() => { setDropdownOpen(false); openModal('System Audit Trail', <AuditLogViewer />); }} style={{ color: '#f5a623' }}>
+                      <ShieldAlert size={16} /> Audit Logs
+                    </button>
+                  )}
                   
                   <div style={{ height: '1px', background: 'var(--border-light)', margin: '4px 0' }}></div>
                   
