@@ -378,7 +378,7 @@ function Dashboard() {
             </div>
           </div>
 
-          <div style={{ flexGrow: 1, borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+          <div style={{ flexGrow: 1, minHeight: '400px', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
             <InteractiveMap activeFilter={activeFilter} onMarkerClick={handleMarkerClick} />
           </div>
 
