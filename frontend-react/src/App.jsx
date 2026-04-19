@@ -1,9 +1,13 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Login from './pages/Login';
-import Dashboard from './pages/Dashboard';
 import ProtectedRoute from './components/ProtectedRoute';
 import './index.css';
+
+import Dashboard from './pages/Dashboard';
+import SentimentDetail from './pages/SentimentDetail';
+import CategoryDetail from './pages/CategoryDetail';
+import BenchmarkDetail from './pages/BenchmarkDetail';
 
 function App() {
   return (
@@ -13,6 +17,9 @@ function App() {
         
         <Route element={<ProtectedRoute />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/analytics/sentiment" element={<SentimentDetail />} />
+          <Route path="/analytics/categories" element={<CategoryDetail />} />
+          <Route path="/analytics/benchmark" element={<BenchmarkDetail />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

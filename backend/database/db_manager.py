@@ -265,6 +265,60 @@ async def get_sentiment_summary() -> list[dict]:
     return results
 
 
+async def get_sentiment_evolution(category: Optional[str] = None) -> list[dict]:
+    """Calculates weighted average sentiment scores over a timeline for trend regression analysis."""
+    pipeline = []
+    if category and category != "Overall Map":
+        pipeline.append({"$match": {"category": category}})
+    
+    pipeline.extend([
+        {
+            "$group": {
+                "_id": { "$dateToString": { "format": "%Y-%m-%d", "date": "$created_at" } },
+                "avg_sentiment": { "$avg": "$sentiment_score" },
+                "volume": { "$sum": 1 }
+            }
+        },
+        {"$sort": {"_id": 1}}
+    ])
+    
+    cursor = posts_collection.aggregate(pipeline)
+    return [{"date": r["_id"], "score": round(r["avg_sentiment"], 3), "volume": r["volume"]} async for r in cursor]
+
+
+async def get_category_intersection() -> list[dict]:
+    """Analyzes cross-category technical density to identify multi-disciplinary hubs."""
+    # We look for universities that lead in multiple specific categories
+    pipeline = [
+        {"$unwind": "$universities"},
+        {
+            "$group": {
+                "_id": { "university": "$universities", "category": "$category" },
+                "count": { "$sum": 1 }
+            }
+        },
+        {
+            "$group": {
+                "_id": "$_id.university",
+                "categories": {
+                    "$push": { "k": "$_id.category", "v": "$count" }
+                }
+            }
+        },
+        {
+            "$project": {
+                "university": "$_id",
+                "matrix": { "$arrayToObject": "$categories" },
+                "total_breadth": { "$size": "$categories" }
+            }
+        },
+        {"$sort": { "total_breadth": -1 }},
+        {"$limit": 10}
+    ]
+    cursor = posts_collection.aggregate(pipeline)
+    return [r async for r in cursor]
+
+
 async def get_all_posts_list() -> list[dict]:
     cursor = posts_collection.find()
     posts = await cursor.to_list(length=None)
@@ -298,7 +352,30 @@ async def get_posts(category=None, region=None, limit=50) -> list:
     return posts
 
 
-async def get_university_posts(university: str, limit: int = 20, category: Optional[str] = None) -> list:
+async def get_benchmark_data(uni1: str, uni2: str) -> dict:
+    """Provides a competitive differential matrix between two specific institutions."""
+    async def get_stats(uni):
+        pipeline = [
+            {"$match": {"universities": uni}},
+            {
+                "$group": {
+                    "_id": "$category",
+                    "count": {"$sum": 1},
+                    "avg_sentiment": {"$avg": "$sentiment_score"}
+                }
+            }
+        ]
+        cursor = posts_collection.aggregate(pipeline)
+        return {r["_id"]: {"count": r["count"], "sentiment": round(r["avg_sentiment"], 3)} async for r in cursor}
+    
+    stats1 = await get_stats(uni1)
+    stats2 = await get_stats(uni2)
+    
+    return {
+        "uni1": {"name": uni1, "metrics": stats1},
+        "uni2": {"name": uni2, "metrics": stats2}
+    }
+
     """Fetch raw posts specifically mentioning a given university."""
     # We do a text search or array match on 'universities'
     query: dict = {"universities": university}

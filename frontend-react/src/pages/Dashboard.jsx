@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Sparkles, MapPin, Activity, Download, Settings, X, ExternalLink, Upload, ShieldAlert, User, Moon, Sun, LogOut, ChevronDown, PieChart as PieChartIcon, BarChart3 } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
@@ -57,7 +58,8 @@ const PostTile = ({ p, index }) => {
 };
 
 const BusinessAnalyticsGrid = () => {
-  const [pieData, setPieData] = useState([]);
+  const navigate = useNavigate();
+  const [pieData, setPieData] = useState([]);;
   const [barData, setBarData] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -105,7 +107,11 @@ const BusinessAnalyticsGrid = () => {
           ) : pieData.length === 0 ? (
              <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>No data available.</div>
           ) : (
-            <div style={{ width: '100%', height: '300px' }}>
+            <div 
+              style={{ width: '100%', height: '300px', cursor: 'pointer' }}
+              onClick={() => navigate('/analytics/sentiment')}
+              title="Click for Deep Sentiment Analysis"
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -144,7 +150,11 @@ const BusinessAnalyticsGrid = () => {
           ) : barData.length === 0 ? (
              <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>No data available.</div>
           ) : (
-            <div style={{ width: '100%', height: '300px' }}>
+            <div 
+              style={{ width: '100%', height: '300px', cursor: 'pointer' }}
+              onClick={() => navigate('/analytics/categories')}
+              title="Click for Detailed Technical Mapping"
+            >
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={barData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                   <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
@@ -568,6 +578,14 @@ function Dashboard() {
                 </div>
               ))}
             </div>
+
+            <button 
+              onClick={() => navigate('/analytics/benchmark')}
+              className="nav-btn-primary" 
+              style={{ marginTop: '1.5rem', width: '100%', fontSize: '0.85rem' }}
+            >
+              Benchmark Institutions
+            </button>
           </div>
           
           <div className="card" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
