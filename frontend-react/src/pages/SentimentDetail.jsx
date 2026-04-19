@@ -60,6 +60,12 @@ const SentimentDetail = () => {
 
           {loading ? (
             <div style={{ height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>Loading Big Data...</div>
+          ) : data.length === 0 ? (
+            <div style={{ height: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '1px dashed var(--border-strong)', borderRadius: '16px', background: 'rgba(0,0,0,0.02)' }}>
+               <Search size={48} color="var(--text-tertiary)" style={{ marginBottom: '16px' }} />
+               <div style={{ fontWeight: 700, fontSize: '1.25rem', color: 'var(--text-primary)' }}>No Intelligence Data Found</div>
+               <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>Please go to Settings > Dataset Upload to populate the database.</p>
+            </div>
           ) : (
             <div style={{ width: '100%', height: '400px' }}>
               <ResponsiveContainer width="100%" height="100%">

@@ -66,7 +66,11 @@ const CategoryDetail = () => {
            {loading ? (
              <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Correlating nodes...</div>
            ) : data.length === 0 ? (
-             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>No distribution data found.</div>
+             <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '1px dashed var(--border-strong)', borderRadius: '16px', background: 'rgba(0,0,0,0.02)' }}>
+                <Target size={48} color="var(--text-tertiary)" style={{ marginBottom: '16px' }} />
+                <div style={{ fontWeight: 700, fontSize: '1.25rem', color: 'var(--text-primary)' }}>No Matrix Nodes Found</div>
+                <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>Ingest technical engagement data to visualize institutional density.</p>
+             </div>
            ) : (
              <div style={{ width: '100%', height: '500px' }}>
                 <ResponsiveContainer width="100%" height="100%">

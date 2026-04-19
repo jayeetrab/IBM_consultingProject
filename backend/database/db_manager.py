@@ -20,6 +20,20 @@ async def save_posts(posts: list[dict]):
     docs_to_insert = []
     geo_docs = []
     
+    def parse_dt(dt_val):
+        if not dt_val:
+            return datetime.utcnow()
+        if isinstance(dt_val, datetime):
+            return dt_val
+        if isinstance(dt_val, str):
+            try:
+                # Handle ISO format from generate script
+                return datetime.fromisoformat(dt_val.replace('Z', '+00:00'))
+            except Exception:
+                # Final fallback
+                return datetime.utcnow()
+        return datetime.utcnow()
+
     for p in posts:
         # Create a document for the post
         post_doc = {
@@ -33,7 +47,7 @@ async def save_posts(posts: list[dict]):
             "sentiment_score": p.get("sentiment", {}).get("compound", 0.0),
             "category": p.get("category", "unknown"),
             "score": p.get("score", 0),
-            "created_at": p.get("created_at", datetime.utcnow()),
+            "created_at": parse_dt(p.get("created_at")),
             "url": p.get("url", "")
         }
         docs_to_insert.append(post_doc)
