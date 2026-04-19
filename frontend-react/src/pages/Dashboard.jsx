@@ -108,7 +108,7 @@ const BusinessAnalyticsGrid = () => {
              <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>No data available.</div>
           ) : (
             <div 
-              style={{ width: '100%', height: '320px', cursor: 'pointer', position: 'relative' }}
+              style={{ width: '100%', height: '320px', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
               onClick={() => navigate('/analytics/sentiment')}
               title="Click for Deep Sentiment Analysis"
             >
@@ -118,14 +118,14 @@ const BusinessAnalyticsGrid = () => {
                     data={pieData}
                     cx="50%"
                     cy="45%"
-                    innerRadius={70}
-                    outerRadius={105}
-                    paddingAngle={8}
+                    innerRadius={75}
+                    outerRadius={110}
+                    paddingAngle={6}
                     dataKey="value"
                     stroke="none"
                   >
                     {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} cornerRadius={4} />
+                      <Cell key={`cell-${index}`} fill={entry.color} cornerRadius={6} />
                     ))}
                   </Pie>
                   <Tooltip 
@@ -135,14 +135,28 @@ const BusinessAnalyticsGrid = () => {
                 </PieChart>
               </ResponsiveContainer>
               
-              {/* Center Label for Donut */}
+              {/* Center Label for Donut - Refined Centering */}
               {!loading && pieData.length > 0 && (
-                <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 600, textTransform: 'uppercase' }}>Sentiment</div>
-                  <div style={{ fontSize: '1.25rem', fontWeight: 800 }}>{pieData.reduce((acc, d) => acc + d.value, 0)}</div>
+                <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -100%)', textAlign: 'center', pointerEvents: 'none' }}>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Matrix Volume</div>
+                  <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>
+                    {pieData.reduce((acc, d) => acc + d.value, 0)}
+                  </div>
                 </div>
               )}
             </div>
+
+            <button 
+              onClick={() => navigate('/analytics/sentiment')}
+              style={{ 
+                marginTop: '1rem', width: '100%', padding: '0.75rem', borderRadius: '12px',
+                background: 'rgba(15, 98, 254, 0.05)', color: 'var(--accent-blue)',
+                border: 'none', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
+                transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+              }}
+            >
+              View Sentiment Evolution <ExternalLink size={14} />
+            </button>
           )}
         </div>
 
@@ -175,6 +189,18 @@ const BusinessAnalyticsGrid = () => {
                 </BarChart>
               </ResponsiveContainer>
             </div>
+
+            <button 
+              onClick={() => navigate('/analytics/categories')}
+              style={{ 
+                marginTop: '1rem', width: '100%', padding: '0.75rem', borderRadius: '12px',
+                background: 'rgba(15, 98, 254, 0.05)', color: 'var(--accent-blue)',
+                border: 'none', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
+                transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+              }}
+            >
+              View Academic Mapping <ExternalLink size={14} />
+            </button>
           )}
         </div>
 

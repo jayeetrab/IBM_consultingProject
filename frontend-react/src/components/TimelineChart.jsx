@@ -14,11 +14,11 @@ const TimelineChart = ({ filter }) => {
         }
         const res = await api.get(url);
         
-        // Format dates correctly from string
+        // Format dates correctly using MMM DD format to prevent weekday collisions
         const formatted = res.data.map(d => {
           const dateObj = new Date(d.date);
-          const shortDay = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
-          return { name: shortDay, engagements: d.post_count };
+          const monthDay = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+          return { name: monthDay, engagements: d.post_count };
         });
         
         setData(formatted);

@@ -101,16 +101,28 @@ const DatasetUpload = ({ onClose }) => {
             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
               {message}
             </p>
-            <button 
-              onClick={reset}
-              style={{ 
-                marginTop: '1.5rem', background: 'var(--text-primary)', color: 'white',
-                border: 'none', padding: '0.6rem 1.2rem', borderRadius: 'var(--radius-pill)',
-                fontWeight: 600, cursor: 'pointer'
-              }}
-            >
-              Upload Another
-            </button>
+            <div style={{ display: 'flex', gap: '12px', justifyContent: 'center', marginTop: '1.5rem' }}>
+              <button 
+                onClick={reset}
+                style={{ 
+                  background: 'var(--border-strong)', color: 'var(--text-primary)',
+                  border: 'none', padding: '0.6rem 1.2rem', borderRadius: 'var(--radius-pill)',
+                  fontWeight: 600, cursor: 'pointer'
+                }}
+              >
+                Upload Another
+              </button>
+              <button 
+                onClick={onClose}
+                style={{ 
+                  background: 'var(--text-primary)', color: 'white',
+                  border: 'none', padding: '0.6rem 1.2rem', borderRadius: 'var(--radius-pill)',
+                  fontWeight: 600, cursor: 'pointer'
+                }}
+              >
+                Done
+              </button>
+            </div>
           </motion.div>
         ) : (
           <motion.div key="form" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
