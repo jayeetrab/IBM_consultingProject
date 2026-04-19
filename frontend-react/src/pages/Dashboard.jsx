@@ -59,11 +59,14 @@ const NewInsightsGrid = () => {
   const [data, setData] = useState({
     tech_interest: [], regional: [], active_locations: [], community: []
   });
+  const [loading, setLoading] = useState(true);
 
   React.useEffect(() => {
+    setLoading(true);
     api.get('/api/analytics/insight-sections')
       .then(res => setData(res.data))
-      .catch(err => console.error("Error fetching insights:", err));
+      .catch(err => console.error("Error fetching insights:", err))
+      .finally(() => setLoading(false));
   }, []);
 
   const renderList = (title, items, emoji) => (
@@ -71,8 +74,10 @@ const NewInsightsGrid = () => {
       <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.5rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
         {emoji} {title}
       </h3>
-      {items.length === 0 ? (
+      {loading ? (
         <div style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>Loading insights...</div>
+      ) : items.length === 0 ? (
+        <div style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>No data available.</div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {items.map((item, idx) => {

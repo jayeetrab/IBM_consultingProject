@@ -130,7 +130,7 @@ async def get_geo_engagements(region: Optional[str] = None, category: Optional[s
     pipeline.append({
         "$group": {
             "_id": group_id,
-            "post_count": {"$sum": "$post_count"},
+            "post_count": {"$sum": {"$ifNull": ["$post_count", 1]}},
             "avg_sentiment": {"$max": "positive"} # simplification
         }
     })
@@ -179,7 +179,14 @@ async def get_timeline_data(date_from=None, date_to=None, category=None) -> list
         dt = p.get("created_at")
         if not dt:
             dt = datetime.utcnow()
-            
+        elif isinstance(dt, str):
+            try:
+                dt = datetime.fromisoformat(dt.replace('Z', '+00:00'))
+            except Exception:
+                # Fallback naive parse for YYYY-MM-DD
+                try: dt = datetime.strptime(dt.split()[0], "%Y-%m-%d")
+                except: dt = datetime.utcnow()
+                
         df_data.append({
             "date": dt.strftime("%Y-%m-%d"),
             "category": cat
