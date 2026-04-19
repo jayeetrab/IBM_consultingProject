@@ -108,7 +108,7 @@ const BusinessAnalyticsGrid = () => {
              <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>No data available.</div>
           ) : (
             <div 
-              style={{ width: '100%', height: '300px', cursor: 'pointer' }}
+              style={{ width: '100%', height: '320px', cursor: 'pointer', position: 'relative' }}
               onClick={() => navigate('/analytics/sentiment')}
               title="Click for Deep Sentiment Analysis"
             >
@@ -117,23 +117,31 @@ const BusinessAnalyticsGrid = () => {
                   <Pie
                     data={pieData}
                     cx="50%"
-                    cy="50%"
-                    innerRadius={60}
-                    outerRadius={100}
-                    paddingAngle={5}
+                    cy="45%"
+                    innerRadius={70}
+                    outerRadius={105}
+                    paddingAngle={8}
                     dataKey="value"
                     stroke="none"
                   >
                     {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
+                      <Cell key={`cell-${index}`} fill={entry.color} cornerRadius={4} />
                     ))}
                   </Pie>
                   <Tooltip 
-                    contentStyle={{ borderRadius: '12px', border: '1px solid var(--border-strong)', background: 'var(--bg-secondary)', fontWeight: 600 }}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid var(--border-strong)', background: 'var(--bg-secondary)', fontWeight: 700, boxShadow: '0 8px 30px rgba(0,0,0,0.1)' }}
                   />
-                  <Legend verticalAlign="bottom" height={36}/>
+                  <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '0.85rem', fontWeight: 600 }} />
                 </PieChart>
               </ResponsiveContainer>
+              
+              {/* Center Label for Donut */}
+              {!loading && pieData.length > 0 && (
+                <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center', pointerEvents: 'none' }}>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-tertiary)', fontWeight: 600, textTransform: 'uppercase' }}>Sentiment</div>
+                  <div style={{ fontSize: '1.25rem', fontWeight: 800 }}>{pieData.reduce((acc, d) => acc + d.value, 0)}</div>
+                </div>
+              )}
             </div>
           )}
         </div>

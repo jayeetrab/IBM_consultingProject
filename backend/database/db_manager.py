@@ -182,8 +182,12 @@ async def get_timeline_data(date_from=None, date_to=None, category=None) -> list
     if not posts:
         return []
         
-    df_data = []
+    # Use native collections.defaultdict instead of pandas to avoid NameError/Dependency issues
+    from collections import defaultdict
+    aggregation = defaultdict(int)
+    
     for p in posts:
+        # Determine category accurately
         cat = "unknown"
         if "keywords" in p and "matched_categories" in p["keywords"] and p["keywords"]["matched_categories"]:
             cat = p["keywords"]["matched_categories"][0]
@@ -197,19 +201,24 @@ async def get_timeline_data(date_from=None, date_to=None, category=None) -> list
             try:
                 dt = datetime.fromisoformat(dt.replace('Z', '+00:00'))
             except Exception:
-                # Fallback naive parse for YYYY-MM-DD
                 try: dt = datetime.strptime(dt.split()[0], "%Y-%m-%d")
                 except: dt = datetime.utcnow()
-                
-        df_data.append({
-            "date": dt.strftime("%Y-%m-%d"),
-            "category": cat
-        })
         
-    df = pd.DataFrame(df_data)
+        date_str = dt.strftime("%Y-%m-%d")
+        aggregation[(date_str, cat)] += 1
     
-    result = df.groupby(["date", "category"]).size().reset_index(name="post_count")
-    return result.to_dict(orient="records")
+    # Format back for Recharts consumption
+    result = []
+    for (date_str, cat), count in aggregation.items():
+        result.append({
+            "date": date_str,
+            "category": cat,
+            "post_count": count
+        })
+    
+    # Sort chronologically
+    result.sort(key=lambda x: x["date"])
+    return result
 
 
 async def get_top_universities(region=None, category=None, limit=10) -> list[dict]:
