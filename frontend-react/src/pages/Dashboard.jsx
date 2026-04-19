@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, MapPin, Activity, Download, Settings, X, ExternalLink, Upload, ShieldAlert, User, Moon, Sun, LogOut, ChevronDown } from 'lucide-react';
+import { Sparkles, MapPin, Activity, Download, Settings, X, ExternalLink, Upload, ShieldAlert, User, Moon, Sun, LogOut, ChevronDown, PieChart as PieChartIcon, BarChart3 } from 'lucide-react';
+import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import api from '../services/api';
 import InteractiveMap from '../components/InteractiveMap';
 import TimelineChart from '../components/TimelineChart';
@@ -55,60 +56,110 @@ const PostTile = ({ p, index }) => {
   );
 };
 
-const NewInsightsGrid = () => {
-  const [data, setData] = useState({
-    tech_interest: [], regional: [], active_locations: [], community: []
-  });
+const BusinessAnalyticsGrid = () => {
+  const [pieData, setPieData] = useState([]);
+  const [barData, setBarData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  React.useEffect(() => {
+  useEffect(() => {
     setLoading(true);
-    api.get('/api/analytics/insight-sections')
-      .then(res => setData(res.data))
-      .catch(err => console.error("Error fetching insights:", err))
-      .finally(() => setLoading(false));
-  }, []);
+    Promise.all([
+      api.get('/api/analytics/sentiment-summary'),
+      api.get('/api/analytics/insight-sections')
+    ])
+    .then(([sentRes, structRes]) => {
+      // Map Sentiment for PieChart
+      const sRaw = sentRes.data;
+      const formattedPie = sRaw.map(s => ({
+        name: s.label.charAt(0).toUpperCase() + s.label.slice(1),
+        value: s.count,
+        color: s.label === 'positive' ? '#34c759' : s.label === 'negative' ? 'var(--accent-red)' : 'var(--text-tertiary)'
+      }));
+      setPieData(formattedPie);
 
-  const renderList = (title, items, emoji) => (
-    <div className="card" style={{ flex: '1 1 300px', display: 'flex', flexDirection: 'column' }}>
-      <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.5rem', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', gap: '8px' }}>
-        {emoji} {title}
-      </h3>
-      {loading ? (
-        <div style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>Loading insights...</div>
-      ) : items.length === 0 ? (
-        <div style={{ color: 'var(--text-tertiary)', fontSize: '0.9rem' }}>No data available.</div>
-      ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-          {items.map((item, idx) => {
-            const maxVal = items[0].count || 1;
-            const pct = (item.count / maxVal) * 100;
-            return (
-              <div key={idx}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px' }}>
-                  <span style={{ fontWeight: 600, fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
-                    {item.university || item.region}
-                  </span>
-                  <span style={{ fontWeight: 700, color: 'var(--accent-blue)', fontSize: '0.85rem' }}>{item.count.toLocaleString()}</span>
-                </div>
-                <div style={{ width: '100%', height: '6px', background: 'var(--border-light)', borderRadius: '4px', overflow: 'hidden' }}>
-                  <div style={{ width: `${pct}%`, height: '100%', background: 'linear-gradient(90deg, var(--accent-blue), #5294ff)', borderRadius: '4px' }}></div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
-    </div>
-  );
+      // Map Categories for BarChart
+      const techArr = structRes.data.tech_interest || [];
+      const formattedBar = techArr.map(t => ({
+        name: t.university,
+        engagements: t.count
+      }));
+      setBarData(formattedBar);
+    })
+    .catch(err => console.error(err))
+    .finally(() => setLoading(false));
+  }, []);
 
   return (
     <div style={{ padding: '0 2rem 4rem', maxWidth: '1400px', margin: '-1rem auto 0' }}>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
-        {renderList("Tech Interest Leaders", data.tech_interest, <Activity size={18} color="var(--accent-red)"/>)}
-        {renderList("Regional Variation", data.regional, <MapPin size={18} color="var(--accent-blue)"/>)}
-        {renderList("Active Communities", data.active_locations, <Sparkles size={18} color="#f5a623"/>)}
-        {renderList("Skills & Open Source", data.community, <Activity size={18} color="#34c759"/>)}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '32px' }}>
+        
+        {/* Sentiment Pie Chart */}
+        <div className="card fade-in" style={{ padding: '32px', display: 'flex', flexDirection: 'column' }}>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <PieChartIcon size={20} color="#f5a623" />
+            Global Sentiment Ratio
+          </h3>
+          
+          {loading ? (
+             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading BI...</div>
+          ) : pieData.length === 0 ? (
+             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>No data available.</div>
+          ) : (
+            <div style={{ width: '100%', height: '300px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={100}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '12px', border: '1px solid var(--border-strong)', background: 'var(--bg-secondary)', fontWeight: 600 }}
+                  />
+                  <Legend verticalAlign="bottom" height={36}/>
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+
+        {/* Categories Bar Chart */}
+        <div className="card fade-in" style={{ padding: '32px', display: 'flex', flexDirection: 'column' }}>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <BarChart3 size={20} color="var(--accent-blue)" />
+            Top Institutional Performers
+          </h3>
+          
+          {loading ? (
+             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading BI...</div>
+          ) : barData.length === 0 ? (
+             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>No data available.</div>
+          ) : (
+            <div style={{ width: '100%', height: '300px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={barData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                  <Tooltip 
+                    cursor={{ fill: 'var(--bg-primary)' }}
+                    contentStyle={{ borderRadius: '12px', border: '1px solid var(--border-strong)', background: 'var(--bg-secondary)', fontWeight: 600 }}
+                  />
+                  <Bar dataKey="engagements" fill="var(--accent-blue)" radius={[6, 6, 0, 0]} maxBarSize={60} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          )}
+        </div>
+
       </div>
     </div>
   );
@@ -362,7 +413,7 @@ function Dashboard() {
           </div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border-light)' }}>
           <div>
             <div style={{ fontWeight: 600 }}>Data Anonymization</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>Hide explicit names from analytical extracts</div>
@@ -372,7 +423,14 @@ function Dashboard() {
           </div>
         </div>
 
-        <button className="nav-btn-primary" onClick={() => setModalOpen(false)} style={{ marginTop: '1rem' }}>Save & Apply</button>
+        <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem' }}>
+          <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text-primary)' }}>Administrative Actions</h4>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            <DatasetUpload onClose={() => setModalOpen(false)} />
+          </div>
+        </div>
+
+        <button className="nav-btn-primary" onClick={() => setModalOpen(false)} style={{ marginTop: '1.5rem' }}>Save & Apply</button>
       </div>
     ));
     setDropdownOpen(false);
@@ -391,14 +449,6 @@ function Dashboard() {
         
         <div className="nav-links">
           <button className="nav-btn" onClick={() => openModal('Documentation', <p>Full API documentation is available at <code>/docs</code> on the backend. Fast, fully typed asynchronous endpoints powered by FastAPI and MongoDB.</p>)}>Documentation</button>
-          
-          <button 
-            className="nav-btn" 
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--accent-blue)' }}
-            onClick={() => openModal('Upload Dataset', <DatasetUpload onClose={() => setModalOpen(false)} />)}
-          >
-            <Upload size={16} /> Upload
-          </button>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.03)', padding: '4px 8px', borderRadius: '8px' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Export:</span>
@@ -563,8 +613,8 @@ function Dashboard() {
 
       </main>
       
-      {/* 5. New Expanded Insights Section */}
-      <NewInsightsGrid />
+      {/* 5. New Expanded Insights Section (Business Analytics Upgrade) */}
+      <BusinessAnalyticsGrid />
 
       {/* Detail Slide Panel */}
       <PostDetailsPanel 
