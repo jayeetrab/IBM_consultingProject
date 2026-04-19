@@ -168,9 +168,7 @@ async def get_timeline_data(date_from=None, date_to=None, category=None) -> list
     if not posts:
         return []
         
-    from collections import defaultdict
-    grouped = defaultdict(int)
-
+    df_data = []
     for p in posts:
         cat = "unknown"
         if "keywords" in p and "matched_categories" in p["keywords"] and p["keywords"]["matched_categories"]:
@@ -189,18 +187,15 @@ async def get_timeline_data(date_from=None, date_to=None, category=None) -> list
                 try: dt = datetime.strptime(dt.split()[0], "%Y-%m-%d")
                 except: dt = datetime.utcnow()
                 
-        date_str = dt.strftime("%Y-%m-%d")
-        grouped[(date_str, cat)] += 1
-        
-    result = []
-    for (d, c), count in grouped.items():
-        result.append({
-            "date": d,
-            "category": c,
-            "post_count": count
+        df_data.append({
+            "date": dt.strftime("%Y-%m-%d"),
+            "category": cat
         })
         
-    return result
+    df = pd.DataFrame(df_data)
+    
+    result = df.groupby(["date", "category"]).size().reset_index(name="post_count")
+    return result.to_dict(orient="records")
 
 
 async def get_top_universities(region=None, category=None, limit=10) -> list[dict]:

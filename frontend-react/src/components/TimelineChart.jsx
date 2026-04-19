@@ -17,8 +17,8 @@ const TimelineChart = ({ filter }) => {
         // Format dates correctly from string
         const formatted = res.data.map(d => {
           const dateObj = new Date(d.date);
-          const fullDateStr = dateObj.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
-          return { name: fullDateStr, engagements: d.post_count };
+          const shortDay = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+          return { name: shortDay, engagements: d.post_count };
         });
         
         setData(formatted);
