@@ -30,6 +30,23 @@
   --transition-smooth: all 0.5s cubic-bezier(0.2, 1, 0.2, 1);
 }
 
+/* Deep Dark Mode Theme */
+[data-theme='dark'] {
+  --bg-primary: #0a0a0a;
+  --bg-secondary: #141414;
+  
+  --text-primary: #FAFAFA;
+  --text-secondary: #A0A0A5;
+  --text-tertiary: #6B6B70;
+  
+  --border-light: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.16);
+  
+  --glass-bg: rgba(20, 20, 20, 0.7);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.1);
+  --shadow-soft: 0 10px 40px -10px rgba(0,0,0,0.4);
+}
+
 * {
   box-sizing: border-box;
   margin: 0;

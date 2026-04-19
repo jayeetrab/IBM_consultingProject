@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, MapPin, Activity, Download, Settings, X, ExternalLink, Upload, ShieldAlert } from 'lucide-react';
+import { Sparkles, MapPin, Activity, Download, Settings, X, ExternalLink, Upload, ShieldAlert, User, Moon, Sun, LogOut, ChevronDown } from 'lucide-react';
 import api from '../services/api';
 import InteractiveMap from '../components/InteractiveMap';
 import TimelineChart from '../components/TimelineChart';
@@ -244,9 +244,31 @@ function Dashboard() {
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', content: null });
+  
+  // Real Website SaaS State
+  const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+  const user = JSON.parse(localStorage.getItem('ibm_user') || '{"name": "Admin", "email": "admin"}');
 
-  React.useEffect(() => {
-    // Fetch global stats on load
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  useEffect(() => {
+    // Click outside handler for dropdown
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [dropdownRef]);
+
+  // Fetch global stats on load
+  useEffect(() => {
     api.get('/api/analytics/global-stats')
       .then(res => setGlobalStats(res.data))
       .catch(err => console.error("Error fetching stats:", err));
@@ -267,6 +289,45 @@ function Dashboard() {
     localStorage.removeItem('ibm_token');
     localStorage.removeItem('ibm_user');
     window.location.href = '/login';
+  };
+
+  const toggleTheme = () => {
+    setTheme(prev => prev === 'light' ? 'dark' : 'light');
+    setDropdownOpen(false);
+  };
+
+  const openProfile = () => {
+    openModal('My Profile', (
+      <div style={{ padding: '1rem 0' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
+          <div style={{ width: '64px', height: '64px', borderRadius: '50%', background: 'linear-gradient(135deg, var(--accent-blue), #5294ff)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '1.5rem', fontWeight: 700 }}>
+            {user.name.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div style={{ fontSize: '1.25rem', fontWeight: 700 }}>{user.name}</div>
+            <div style={{ color: 'var(--text-secondary)' }}>{user.email}</div>
+          </div>
+        </div>
+        <div style={{ background: 'var(--bg-primary)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-light)' }}>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '8px', fontWeight: 700 }}>Account Status</div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', color: '#34c759', fontWeight: 600 }}>
+            <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#34c759' }}></div>
+            Active Intelligence Tier
+          </div>
+        </div>
+      </div>
+    ));
+    setDropdownOpen(false);
+  };
+
+  const openSettings = () => {
+    openModal('Platform Settings', (
+      <div style={{ padding: '1rem 0', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <p style={{ color: 'var(--text-secondary)' }}>Configure global alert sensitivity and dataset caching rules.</p>
+        <button className="nav-btn-primary" onClick={() => setModalOpen(false)}>Save Preferences</button>
+      </div>
+    ));
+    setDropdownOpen(false);
   };
 
   return (
@@ -300,19 +361,80 @@ function Dashboard() {
           </button>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.03)', padding: '4px 8px', borderRadius: '8px' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Export Data:</span>
+            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Export:</span>
             <a href="/api/export/csv" className="nav-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px' }}>
               <Download size={14} /> CSV
             </a>
-            <div style={{ width: '1px', height: '12px', background: 'var(--border-strong)' }}></div>
-            <a href="/api/export/xlsx" className="nav-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px' }}>
-              <Download size={14} /> Excel
-            </a>
           </div>
           
-          <button className="nav-btn" onClick={handleLogout} style={{ color: 'var(--accent-red)', fontWeight: 600 }}>Logout</button>
+          {/* User Profile Dropdown */}
+          <div style={{ position: 'relative' }} ref={dropdownRef}>
+            <button 
+              className="nav-btn" 
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-secondary)', padding: '6px 12px', borderRadius: '100px', border: '1px solid var(--border-strong)', color: 'var(--text-primary)' }}
+            >
+              <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.8rem', fontWeight: 700 }}>
+                {user.name.charAt(0).toUpperCase()}
+              </div>
+              <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user.name.split(' ')[0]}</span>
+              <ChevronDown size={14} style={{ color: 'var(--text-tertiary)', transform: dropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
+            </button>
+
+            <AnimatePresence>
+              {dropdownOpen && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                  style={{ 
+                    position: 'absolute', top: 'calc(100% + 8px)', right: 0, 
+                    background: 'var(--bg-secondary)', border: '1px solid var(--border-strong)', 
+                    borderRadius: '16px', minWidth: '220px', padding: '8px', 
+                    boxShadow: '0 10px 40px rgba(0,0,0,0.1)', zIndex: 3000
+                  }}
+                >
+                  <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-light)', marginBottom: '4px' }}>
+                    <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{user.name}</div>
+                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{user.email}</div>
+                  </div>
+
+                  <button className="dropdown-item" onClick={openProfile}>
+                    <User size={16} /> My Profile
+                  </button>
+                  <button className="dropdown-item" onClick={openSettings}>
+                    <Settings size={16} /> Settings
+                  </button>
+                  <button className="dropdown-item" onClick={toggleTheme}>
+                    {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />} 
+                    {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
+                  </button>
+                  
+                  <div style={{ height: '1px', background: 'var(--border-light)', margin: '4px 0' }}></div>
+                  
+                  <button className="dropdown-item" onClick={handleLogout} style={{ color: 'var(--accent-red)' }}>
+                    <LogOut size={16} /> Logout
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+          
         </div>
       </nav>
+
+      {/* Basic Dropdown Item CSS */}
+      <style dangerouslySetInnerHTML={{__html: `
+        .dropdown-item {
+          display: flex; align-items: center; gap: 10px; width: 100%; border: none; 
+          background: none; padding: 10px 12px; border-radius: 8px; text-align: left; 
+          font-size: 0.9rem; font-weight: 500; cursor: pointer; color: var(--text-primary);
+          transition: background 0.2s;
+        }
+        .dropdown-item:hover {
+          background: var(--bg-primary);
+        }
+      `}} />
 
       {/* 2. Premium Hero Section */}
       <header className="hero-section fade-in">

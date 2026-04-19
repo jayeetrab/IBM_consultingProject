@@ -6,24 +6,35 @@ import bristolLogo from '../assets/bristol-logo.png';
 import api from '../services/api';
 
 const Login = () => {
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+    setSuccessMsg('');
     
     try {
-      const res = await api.post('/api/auth/login', { email, password });
-      localStorage.setItem('ibm_token', res.data.access_token);
-      localStorage.setItem('ibm_user', JSON.stringify(res.data.user));
-      navigate('/dashboard');
+      if (isRegistering) {
+        await api.post('/api/auth/register', { name, email, password });
+        setSuccessMsg('Registration successful! Please log in.');
+        setIsRegistering(false);
+        setPassword('');
+      } else {
+        const res = await api.post('/api/auth/login', { email, password });
+        localStorage.setItem('ibm_token', res.data.access_token);
+        localStorage.setItem('ibm_user', JSON.stringify(res.data.user));
+        navigate('/dashboard');
+      }
     } catch (err) {
-      setError(err.response?.data?.detail || 'Invalid credentials');
+      setError(err.response?.data?.detail || 'An error occurred');
     } finally {
       setLoading(false);
     }
@@ -57,11 +68,25 @@ const Login = () => {
         {error && <div style={{ color: 'var(--accent-red)', background: 'rgba(184,11,11,0.05)', padding: '12px', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.9rem', fontWeight: 600 }}>
           {error}
         </div>}
+        {successMsg && <div style={{ color: '#34c759', background: 'rgba(52, 199, 89, 0.05)', padding: '12px', borderRadius: '12px', marginBottom: '1.5rem', fontSize: '0.9rem', fontWeight: 600 }}>
+          {successMsg}
+        </div>}
 
-        <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          {isRegistering && (
+            <input 
+              type="text" 
+              placeholder="Full Name" 
+              className="search-box"
+              style={{ padding: '1rem', width: '100%', borderRadius: '12px' }}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+            />
+          )}
           <input 
-            type="email" 
-            placeholder="IBM or University Email" 
+            type="text" 
+            placeholder="Username / Email" 
             className="search-box"
             style={{ padding: '1rem', width: '100%', borderRadius: '12px' }}
             value={email}
@@ -83,9 +108,19 @@ const Login = () => {
             style={{ padding: '1rem', borderRadius: '12px', fontSize: '1rem', fontWeight: 600, marginTop: '1rem', cursor: loading ? 'not-allowed' : 'pointer' }}
             disabled={loading}
           >
-            {loading ? 'Authenticating...' : 'Secure Login'}
+            {loading ? 'Authenticating...' : isRegistering ? 'Create Account' : 'Secure Login'}
           </button>
         </form>
+        
+        <div style={{ marginTop: '2rem', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+          {isRegistering ? "Already have an account? " : "Need access? "}
+          <span 
+            onClick={() => { setIsRegistering(!isRegistering); setError(''); setSuccessMsg(''); }} 
+            style={{ color: 'var(--accent-blue)', fontWeight: 600, cursor: 'pointer' }}
+          >
+            {isRegistering ? "Sign In" : "Sign Up"}
+          </span>
+        </div>
       </motion.div>
     </div>
   );
