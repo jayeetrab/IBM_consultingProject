@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from jose import jwt, JWTError
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException
 from backend.config import settings
 import os
 
