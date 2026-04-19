@@ -107,56 +107,58 @@ const BusinessAnalyticsGrid = () => {
           ) : pieData.length === 0 ? (
              <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>No data available.</div>
           ) : (
-            <div 
-              style={{ width: '100%', height: '320px', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-              onClick={() => navigate('/analytics/sentiment')}
-              title="Click for Deep Sentiment Analysis"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                  <Pie
-                    data={pieData}
-                    cx="50%"
-                    cy="45%"
-                    innerRadius={75}
-                    outerRadius={110}
-                    paddingAngle={6}
-                    dataKey="value"
-                    stroke="none"
-                  >
-                    {pieData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} cornerRadius={6} />
-                    ))}
-                  </Pie>
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '16px', border: '1px solid var(--border-strong)', background: 'var(--bg-secondary)', fontWeight: 700, boxShadow: '0 8px 30px rgba(0,0,0,0.1)' }}
-                  />
-                  <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '0.85rem', fontWeight: 600 }} />
-                </PieChart>
-              </ResponsiveContainer>
-              
-              {/* Center Label for Donut - Refined Centering */}
-              {!loading && pieData.length > 0 && (
-                <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -100%)', textAlign: 'center', pointerEvents: 'none' }}>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Matrix Volume</div>
-                  <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>
-                    {pieData.reduce((acc, d) => acc + d.value, 0)}
+            <>
+              <div 
+                style={{ width: '100%', height: '320px', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                onClick={() => navigate('/analytics/sentiment')}
+                title="Click for Deep Sentiment Analysis"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <PieChart>
+                    <Pie
+                      data={pieData}
+                      cx="50%"
+                      cy="45%"
+                      innerRadius={75}
+                      outerRadius={110}
+                      paddingAngle={6}
+                      dataKey="value"
+                      stroke="none"
+                    >
+                      {pieData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} cornerRadius={6} />
+                      ))}
+                    </Pie>
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '16px', border: '1px solid var(--border-strong)', background: 'var(--bg-secondary)', fontWeight: 700, boxShadow: '0 8px 30px rgba(0,0,0,0.1)' }}
+                    />
+                    <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '0.85rem', fontWeight: 600 }} />
+                  </PieChart>
+                </ResponsiveContainer>
+                
+                {/* Center Label for Donut - Refined Centering */}
+                {!loading && pieData.length > 0 && (
+                  <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -100%)', textAlign: 'center', pointerEvents: 'none' }}>
+                    <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Matrix Volume</div>
+                    <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>
+                      {pieData.reduce((acc, d) => acc + d.value, 0)}
+                    </div>
                   </div>
-                </div>
-              )}
-            </div>
+                )}
+              </div>
 
-            <button 
-              onClick={() => navigate('/analytics/sentiment')}
-              style={{ 
-                marginTop: '1rem', width: '100%', padding: '0.75rem', borderRadius: '12px',
-                background: 'rgba(15, 98, 254, 0.05)', color: 'var(--accent-blue)',
-                border: 'none', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
-                transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-              }}
-            >
-              View Sentiment Evolution <ExternalLink size={14} />
-            </button>
+              <button 
+                onClick={() => navigate('/analytics/sentiment')}
+                style={{ 
+                  marginTop: '1rem', width: '100%', padding: '0.75rem', borderRadius: '12px',
+                  background: 'rgba(15, 98, 254, 0.05)', color: 'var(--accent-blue)',
+                  border: 'none', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
+                  transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+                }}
+              >
+                View Sentiment Evolution <ExternalLink size={14} />
+              </button>
+            </>
           )}
         </div>
 
@@ -172,35 +174,37 @@ const BusinessAnalyticsGrid = () => {
           ) : barData.length === 0 ? (
              <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>No data available.</div>
           ) : (
-            <div 
-              style={{ width: '100%', height: '300px', cursor: 'pointer' }}
-              onClick={() => navigate('/analytics/categories')}
-              title="Click for Detailed Technical Mapping"
-            >
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={barData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                  <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                  <Tooltip 
-                    cursor={{ fill: 'var(--bg-primary)' }}
-                    contentStyle={{ borderRadius: '12px', border: '1px solid var(--border-strong)', background: 'var(--bg-secondary)', fontWeight: 600 }}
-                  />
-                  <Bar dataKey="engagements" fill="var(--accent-blue)" radius={[6, 6, 0, 0]} maxBarSize={60} />
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
+            <>
+              <div 
+                style={{ width: '100%', height: '300px', cursor: 'pointer' }}
+                onClick={() => navigate('/analytics/categories')}
+                title="Click for Detailed Technical Mapping"
+              >
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={barData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                    <Tooltip 
+                      cursor={{ fill: 'var(--bg-primary)' }}
+                      contentStyle={{ borderRadius: '12px', border: '1px solid var(--border-strong)', background: 'var(--bg-secondary)', fontWeight: 600 }}
+                    />
+                    <Bar dataKey="engagements" fill="var(--accent-blue)" radius={[6, 6, 0, 0]} maxBarSize={60} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
 
-            <button 
-              onClick={() => navigate('/analytics/categories')}
-              style={{ 
-                marginTop: '1rem', width: '100%', padding: '0.75rem', borderRadius: '12px',
-                background: 'rgba(15, 98, 254, 0.05)', color: 'var(--accent-blue)',
-                border: 'none', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
-                transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-              }}
-            >
-              View Academic Mapping <ExternalLink size={14} />
-            </button>
+              <button 
+                onClick={() => navigate('/analytics/categories')}
+                style={{ 
+                  marginTop: '1rem', width: '100%', padding: '0.75rem', borderRadius: '12px',
+                  background: 'rgba(15, 98, 254, 0.05)', color: 'var(--accent-blue)',
+                  border: 'none', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
+                  transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
+                }}
+              >
+                View Academic Mapping <ExternalLink size={14} />
+              </button>
+            </>
           )}
         </div>
 
