@@ -104,16 +104,6 @@ const NewInsightsGrid = () => {
 
   return (
     <div style={{ padding: '0 2rem 4rem', maxWidth: '1400px', margin: '-1rem auto 0' }}>
-      
-      <div style={{ marginBottom: '2rem', paddingBottom: '1.5rem', borderBottom: '1px solid var(--border-light)' }}>
-        <h3 style={{ fontSize: '1.5rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '12px', color: '#f5a623', marginBottom: '12px' }}>
-          <Sparkles size={24} /> Semantic Community Insights
-        </h3>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '1.05rem', lineHeight: 1.6, maxWidth: '800px' }}>
-          This sector breaks down the aggregate computational load by extracting semantic meaning from raw engagement metrics. Here, you observe pure volume ranked dynamically, revealing optimal locations for immediate IBM recruiting initiatives or corporate engagement drops based strictly on objective metric weighting.
-        </p>
-      </div>
-
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px' }}>
         {renderList("Tech Interest Leaders", data.tech_interest, <Activity size={18} color="var(--accent-red)"/>)}
         {renderList("Regional Variation", data.regional, <MapPin size={18} color="var(--accent-blue)"/>)}
@@ -511,7 +501,6 @@ function Dashboard() {
         
         {/* Left Column: Stats & Timeline */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          
           <div className="card">
             <h3 style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.5rem' }}>Total Tracked Engagements</h3>
             <div style={{ fontSize: '3rem', fontWeight: 800, letterSpacing: '-0.04em' }}>
@@ -532,50 +521,26 @@ function Dashboard() {
           </div>
           
           <div className="card" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-light)' }}>
-              <h3 style={{ fontSize: '1.25rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-blue)', marginBottom: '8px' }}>
-                 <Activity size={20} /> Longitudinal Velocity Tracking
-              </h3>
-              <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6 }}>
-                Analyze structural historical engagement momentum across all UK & Ireland recruitment channels. 
-                This algorithmic chart exposes categorical surges in interest over time, allowing stakeholders to precisely pinpoint technical marketing efficacy.
-              </p>
-            </div>
-            
-            <div style={{ flexGrow: 1, minHeight: '300px' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+               <Activity size={18} color="var(--accent-blue)" /> Velocity Timeline
+            </h3>
+            <div style={{ flexGrow: 1, minHeight: '250px' }}>
               <TimelineChart filter={activeFilter} />
             </div>
           </div>
-
         </div>
 
         {/* Right Column: Interactive Map */}
         <div className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
           
-          <div style={{ marginBottom: '1.5rem', paddingBottom: '1rem', borderBottom: '1px solid var(--border-light)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <div>
-                <h3 style={{ fontSize: '1.25rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--accent-red)', marginBottom: '8px' }}>
-                  <MapPin size={20} /> Aggregated Geographic Topology
-                </h3>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', lineHeight: 1.6, maxWidth: '600px' }}>
-                  This interactive UI visualizes semantic network nodes intersecting with geographic domains. 
-                  Node saturation dynamically sizes itself against raw student engagement volumes and technical sentiment variables. 
-                </p>
-              </div>
-              <div className="filters-row" style={{ alignSelf: 'flex-start' }}>
-                <button 
-                  className={`filter-chip ${activeFilter === 'Overall Map' ? 'active' : ''}`}
-                  onClick={() => setActiveFilter('Overall Map')}
-                >
-                  Clear Modifiers
-                </button>
-              </div>
-            </div>
-
-            <div className="filters-row" style={{ marginTop: '1rem', flexWrap: 'wrap', gap: '8px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <MapPin size={18} color="var(--accent-red)" /> Engagement Topology
+            </h3>
+            
+            <div className="filters-row" style={{ marginBottom: 0, flexWrap: 'wrap', gap: '8px' }}>
               {[
-                'AI', 'Data Science', 'Design Thinking', 
+                'Overall Map', 'AI', 'Data Science', 'Design Thinking', 
                 'AI and Law', 'IBM SkillsBuild', 'Hackathons', 
                 'Open Source', 'Student Societies'
               ].map(flt => (
@@ -590,7 +555,7 @@ function Dashboard() {
             </div>
           </div>
 
-          <div style={{ flexGrow: 1, minHeight: '500px', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+          <div style={{ flexGrow: 1, minHeight: '400px', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
             <InteractiveMap activeFilter={activeFilter} onMarkerClick={handleMarkerClick} />
           </div>
 
