@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, MapPin, Activity, Download, Settings, X, ExternalLink, Upload } from 'lucide-react';
+import { Sparkles, MapPin, Activity, Download, Settings, X, ExternalLink, Upload, ShieldAlert } from 'lucide-react';
 import api from '../services/api';
 import InteractiveMap from '../components/InteractiveMap';
 import TimelineChart from '../components/TimelineChart';
 import DatasetUpload from '../components/DatasetUpload';
 import AIGlowSearch from '../components/AIGlowSearch';
+import AuditLogViewer from '../components/AuditLogViewer';
 import '../index.css';
 import ibmLogo from '../assets/ibm-logo.png';
 import bristolLogo from '../assets/bristol-logo.png';
@@ -288,6 +289,14 @@ function Dashboard() {
             onClick={() => openModal('Upload Dataset', <DatasetUpload onClose={() => setModalOpen(false)} />)}
           >
             <Upload size={16} /> Upload
+          </button>
+          
+          <button 
+            className="nav-btn" 
+            style={{ display: 'flex', alignItems: 'center', gap: '6px', color: '#f5a623' }}
+            onClick={() => openModal('System Audit Trail', <AuditLogViewer />)}
+          >
+            <ShieldAlert size={16} /> Audit Logs
           </button>
           
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.03)', padding: '4px 8px', borderRadius: '8px' }}>

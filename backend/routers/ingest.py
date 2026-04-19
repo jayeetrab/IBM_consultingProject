@@ -170,6 +170,16 @@ async def upload_dataset(background_tasks: BackgroundTasks, file: UploadFile = F
         background_tasks.add_task(process_uploaded_data, data, is_ibm)
         
         schema_type = "IBM Open Dataset" if is_ibm else "Standard Pipeline"
+        
+        # Write to Audit Log
+        from backend.database.connection import audit_logs_collection
+        await audit_logs_collection.insert_one({
+            "action": "dataset_upload",
+            "user": "System Admin",
+            "details": f"Uploaded dataset '{file.filename}' containing {len(data)} records via {schema_type}.",
+            "timestamp": datetime.utcnow()
+        })
+        
         return {
             "status": "success", 
             "message": f"File '{file.filename}' uploaded and processing started for {len(data)} records using {schema_type}."
