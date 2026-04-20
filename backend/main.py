@@ -65,6 +65,18 @@ app.include_router(ingest.router,    prefix="/api/ingest",    tags=["Ingestion"]
 app.include_router(auth.router,      prefix="/api/auth",      tags=["Auth"])
 app.include_router(admin.router,     prefix="/api/admin",     tags=["Admin"])
 
+@app.get("/")
+async def root():
+    """
+    Root endpoint to provide a heartbeat response for monitoring and cronjobs.
+    """
+    return {
+        "status": "healthy",
+        "service": "IBM Campus Pulse API",
+        "version": "1.0.0",
+        "message": "Backend is active and responding to heartbeats."
+    }
+
 @app.get("/api/health")
 async def health_check():
     return {
