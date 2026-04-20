@@ -10,6 +10,7 @@ import DatasetUpload from '../components/DatasetUpload';
 import AIGlowSearch from '../components/AIGlowSearch';
 import AuditLogViewer from '../components/AuditLogViewer';
 import PostDetailsPanel from '../components/PostDetailsPanel';
+import NavModal from '../components/NavModal';
 import '../index.css';
 import ibmLogo from '../assets/ibm-logo.png';
 import bristolLogo from '../assets/bristol-logo.png';
@@ -446,7 +447,7 @@ function Dashboard() {
           <div className="card">
             <h3 style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.5rem' }}>Total Tracked Engagements</h3>
             <div style={{ fontSize: '3rem', fontWeight: 800, letterSpacing: '-0.04em' }}>
-              {globalStats.total.toLocaleString()}
+              {(globalStats.total || 0).toLocaleString()}
             </div>
             <div style={{ color: '#34c759', fontWeight: 600, fontSize: '0.9rem', marginTop: '0.25rem' }}>
               {globalStats.trajectory} trajectory

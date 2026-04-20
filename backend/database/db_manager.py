@@ -399,6 +399,8 @@ async def get_benchmark_data(uni1: str, uni2: str) -> dict:
         "uni2": {"name": uni2, "metrics": stats2}
     }
 
+
+async def get_university_posts(university: str, limit: int = 25, category: str = None) -> list:
     """Fetch raw posts specifically mentioning a given university."""
     # We do a text search or array match on 'universities'
     query: dict = {"universities": university}
