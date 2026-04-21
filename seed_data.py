@@ -101,11 +101,11 @@ async def insert_geo(posts_list):
     agg = {}
     for p in posts_list:
         u_name = p['universities'][0]
-        c_name = p['keywords']['matched_categories'][0]
-        key = (u_name, c_name)
+        e_type = p['engagement_type']
+        key = (u_name, e_type)
         agg[key] = agg.get(key, 0) + 1
         
-    for (u_name, c_name), count in agg.items():
+    for (u_name, e_type), count in agg.items():
         u_data = uni_map[u_name]
         docs.append({
             "university": u_name,
@@ -113,7 +113,7 @@ async def insert_geo(posts_list):
             "longitude": u_data[2],
             "region": u_data[3],
             "country": u_data[4],
-            "category": c_name,
+            "engagement_type": e_type,
             "post_count": count,
             "last_updated": datetime.utcnow()
         })

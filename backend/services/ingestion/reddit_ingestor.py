@@ -23,12 +23,20 @@ async def fetch_reddit_posts(query: str, limit: int = 10) -> list[dict]:
     try:
         async with httpx.AsyncClient(timeout=10.0) as client:
             response = await client.get(url, headers=headers)
+            
+            if response.status_code == 429:
+                print(f"[Reddit Ingest] Rate limited (429) for '{query}'")
+                # In a production environment, we'd log this. For the demo, we return an empty list gracefully.
+                return []
+                
             response.raise_for_status()
             data = response.json()
             
             posts = []
             for child in data.get("data", {}).get("children", []):
                 post_data = child.get("data", {})
+                if not post_data.get("id"): continue
+                
                 posts.append({
                     "source": "reddit",
                     "id": post_data.get("id"),
@@ -39,8 +47,11 @@ async def fetch_reddit_posts(query: str, limit: int = 10) -> list[dict]:
                     "is_mock": False
                 })
             return posts
+    except httpx.HTTPError as he:
+        print(f"[Reddit Ingest] HTTP Error for '{query}': {he}")
+        return []
     except Exception as e:
-        print(f"[Reddit Ingest] Error fetching for '{query}': {e}")
+        print(f"[Reddit Ingest] Unexpected Error for '{query}': {e}")
         return []
 
 async def fetch_all_reddit_engagements() -> list[dict]:
