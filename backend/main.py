@@ -71,6 +71,7 @@ app.include_router(ingest.router,    prefix="/api/ingest",    tags=["Ingestion"]
 app.include_router(auth.router,      prefix="/api/auth",      tags=["Auth"])
 app.include_router(admin.router,     prefix="/api/admin",     tags=["Admin"])
 
+
 @app.get("/")
 async def root():
     """
