@@ -20,6 +20,7 @@ async def init_db():
         await client.admin.command('ping')
         print("MongoDB connection successful.")
         
+<<<<<<< HEAD
         # v2.0 Analytical Index Suite - 7+ Compound / Targeted Keys
         # 1. Deduplication Unique Index
         await posts_collection.create_index([("source", 1), ("external_id", 1)], unique=True)
@@ -40,6 +41,11 @@ async def init_db():
         await geo_collection.create_index([("post_id", 1), ("university", 1)], unique=True, sparse=True)
         
         # 7. Authentication Unique Index
+=======
+        # Create unique index to avoid duplicate inserts
+        await posts_collection.create_index([("source", 1), ("external_id", 1)], unique=True)
+        await geo_collection.create_index([("post_id", 1)])
+>>>>>>> parent of 3f7135a (huuge)
         await users_collection.create_index([("email", 1)], unique=True)
         
         # Provision Administrator account

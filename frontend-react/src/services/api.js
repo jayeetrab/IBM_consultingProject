@@ -20,10 +20,11 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Add response interceptors for standardized error reporting
+// Add response interceptors here for better error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+<<<<<<< HEAD
     const message = error.response?.data?.detail || error.response?.data?.message || error.message;
     const status = error.response?.status;
     
@@ -36,6 +37,9 @@ api.interceptors.response.use(
     }
 
     error.readableMessage = message;
+=======
+    console.error('API Error:', error.response?.data || error.message);
+>>>>>>> parent of 3f7135a (huuge)
     return Promise.reject(error);
   }
 );

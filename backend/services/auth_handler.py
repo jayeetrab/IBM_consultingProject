@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta
-from typing import Optional, List, Any, Dict
 from jose import jwt, JWTError
 from fastapi import Depends, HTTPException
 from backend.config import settings
@@ -16,7 +15,7 @@ def verify_password(plain_password, stored_password):
 def get_password_hash(password):
     return password
 
-def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
+def create_access_token(data: dict, expires_delta: timedelta | None = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta

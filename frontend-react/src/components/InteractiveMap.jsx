@@ -34,7 +34,7 @@ const InteractiveMap = ({ activeFilter, onMarkerClick }) => {
       try {
         let url = '/api/map/';
         if (activeFilter !== 'Overall Map') {
-          url += `?engagement_type=${encodeURIComponent(activeFilter)}`;
+          url += `?category=${encodeURIComponent(activeFilter)}`;
         }
         const res = await api.get(url);
         setGeoData(res.data);
@@ -48,9 +48,9 @@ const InteractiveMap = ({ activeFilter, onMarkerClick }) => {
 
   return (
     <div style={{ height: '100%', width: '100%', borderRadius: 'inherit', overflow: 'hidden' }}>
-      <MapContainer
-        center={[53.0, -2.0]}
-        zoom={6}
+      <MapContainer 
+        center={[53.0, -2.0]} 
+        zoom={6} 
         style={{ height: '100%', width: '100%' }}
         zoomControl={false}
       >
@@ -59,6 +59,7 @@ const InteractiveMap = ({ activeFilter, onMarkerClick }) => {
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
         />
+<<<<<<< HEAD
 
         {geoData.map((pt, i) => {
           const color = pt.engagement_type === 'technical' ? '#0f62fe' :
@@ -123,16 +124,69 @@ const InteractiveMap = ({ activeFilter, onMarkerClick }) => {
                     Drill into Posts
                   </button>
                 </div>
+=======
+        
+        {geoData.map((pt, i) => (
+          pt.latitude && pt.longitude && (
+          <CircleMarker 
+            key={i}
+            center={[pt.latitude, pt.longitude]}
+            radius={Math.max(10, Math.min(pt.post_count / 10, 40))}
+            fillColor="#B80B0B"
+            color="white"
+            weight={2}
+            opacity={1}
+            fillOpacity={0.7}
+            eventHandlers={{
+              click: () => onMarkerClick(pt.university),
+            }}
+          >
+             <Popup
+              className="apple-popup"
+             >
+               <div style={{ fontFamily: 'Inter, sans-serif' }}>
+                 <strong style={{ fontSize: '1rem', color: '#1d1d1f' }}>{pt.university}</strong>
+                 <div style={{ fontSize: '0.9rem', color: '#86868b', marginTop: '4px' }}>
+                   Click marker to view posts
+                 </div>
+                 <div style={{ marginTop: '8px', padding: '4px 8px', borderRadius: '4px', background: 'rgba(184, 11, 11, 0.1)', color: '#B80B0B', fontWeight: 600, display: 'inline-block' }}>
+                   {pt.post_count} Engagements
+                 </div>
+                 <div style={{ marginTop: '12px' }}>
+                   <button 
+                     onClick={(e) => {
+                       e.stopPropagation();
+                       onMarkerClick(pt.university);
+                     }}
+                     style={{
+                       background: '#B80B0B',
+                       color: 'white',
+                       border: 'none',
+                       borderRadius: '6px',
+                       padding: '6px 12px',
+                       fontSize: '0.9rem',
+                       cursor: 'pointer',
+                       width: '100%',
+                       fontWeight: 500,
+                       transition: 'background 0.2s'
+                     }}
+                     onMouseOver={(e) => e.target.style.background = '#8A0808'}
+                     onMouseOut={(e) => e.target.style.background = '#B80B0B'}
+                   >
+                     View Activity
+                   </button>
+                 </div>
+               </div>
+>>>>>>> parent of 3f7135a (huuge)
               </Popup>
-            </CircleMarker>
-          );
-        })}
+           </CircleMarker>
+          )
+        ))}
         <MapBounds points={geoData} />
       </MapContainer>
 
       {/* Inject small global CSS tweak for map popup to look premium */}
-      <style dangerouslySetInnerHTML={{
-        __html: `
+      <style dangerouslySetInnerHTML={{__html: `
         .leaflet-popup-content-wrapper {
           border-radius: 12px;
           box-shadow: 0 10px 30px rgba(0,0,0,0.1);
