@@ -87,11 +87,47 @@ async def save_posts(posts: List[dict]):
                 
     if geo_docs:
         try:
-            # We don't want duplicate geo points for the same post+university
-            # Use post_id + university check or just insert many and ignore
             await geo_collection.insert_many(geo_docs, ordered=False)
         except Exception:
             pass
+
+async def _rebuild_geo_from_posts():
+    """
+    Standardizes the geo-intelligence layer by re-syncing from the raw post source.
+    Useful after taxonomy updates or data cleaning.
+    """
+    await geo_collection.delete_many({})
+    cursor = posts_collection.find()
+    all_processed = []
+    async for p in cursor:
+        all_processed.append(p)
+    
+    # Batch processing would be better here, but for now we re-use logic
+    from backend.services.geolocation.university_geocoder import enrich_posts_with_geo
+    enriched = enrich_posts_with_geo(all_processed)
+    
+    geo_docs = []
+    for p in enriched:
+        for uni_name in p.get("universities", []):
+            geo = p.get("geo_data", {}).get(uni_name)
+            if geo:
+                geo_docs.append({
+                    "post_id": p["_id"],
+                    "university": uni_name,
+                    "latitude": geo["lat"],
+                    "longitude": geo["lon"],
+                    "region": geo["region"],
+                    "country": geo["country"],
+                    "category": p.get("category", "unknown"),
+                    "engagement_type": p.get("engagement_type", "unknown"),
+                    "is_mock": p.get("is_mock", False),
+                    "sentiment": p.get("sentiment_label", "neutral"),
+                    "post_count": 1,
+                    "last_updated": p.get("created_at")
+                })
+    if geo_docs:
+        await geo_collection.insert_many(geo_docs, ordered=False)
+    return len(geo_docs)
 
 async def get_geo_engagements(region: Optional[str] = None, category: Optional[str] = None, 
                              engagement_type: Optional[str] = None, is_mock: Optional[bool] = None, 
@@ -260,6 +296,16 @@ async def get_sentiment_summary() -> list[dict]:
             "count": row["count"]
         })
     return results
+
+
+async def get_source_breakdown() -> list[dict]:
+    """Provides a distribution of data sources across the ingested pipeline."""
+    pipeline = [
+        {"$group": {"_id": "$source", "count": {"$sum": 1}}},
+        {"$sort": {"count": -1}}
+    ]
+    cursor = posts_collection.aggregate(pipeline)
+    return [{"source": r["_id"], "count": r["count"]} async for r in cursor]
 
 
 async def get_sentiment_evolution(category: Optional[str] = None) -> list[dict]:

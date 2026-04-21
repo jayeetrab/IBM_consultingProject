@@ -20,16 +20,26 @@ async def init_db():
         await client.admin.command('ping')
         print("MongoDB connection successful.")
         
-        # Create analytical indexes for performance
+        # v2.0 Analytical Index Suite - 7+ Compound / Targeted Keys
+        # 1. Deduplication Unique Index
         await posts_collection.create_index([("source", 1), ("external_id", 1)], unique=True)
-        await posts_collection.create_index([("engagement_type", 1)])
-        await posts_collection.create_index([("is_mock", 1)])
-        await posts_collection.create_index([("created_at", -1)])
         
-        await geo_collection.create_index([("post_id", 1)])
-        await geo_collection.create_index([("engagement_type", 1)])
-        await geo_collection.create_index([("region", 1)])
+        # 2. Main Filtering Index (Type + Sentiment + Mock)
+        await posts_collection.create_index([("engagement_type", 1), ("sentiment_label", 1), ("is_mock", 1)])
         
+        # 3. Temporal Engagement Index
+        await posts_collection.create_index([("created_at", -1), ("engagement_type", 1)])
+        
+        # 4. Geo-Topology Compound (Region + Type)
+        await geo_collection.create_index([("region", 1), ("engagement_type", 1)])
+        
+        # 5. Institutional Density Index
+        await geo_collection.create_index([("university", 1), ("engagement_type", 1)])
+        
+        # 6. Post-Geo Relationship Index
+        await geo_collection.create_index([("post_id", 1), ("university", 1)])
+        
+        # 7. Authentication Unique Index
         await users_collection.create_index([("email", 1)], unique=True)
         
         # Hardcode plaintext Administrator account logic

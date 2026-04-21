@@ -69,7 +69,7 @@ const InteractiveMap = ({ activeFilter, onMarkerClick }) => {
               key={i}
               center={[pt.latitude, pt.longitude]}
               radius={Math.max(10, Math.min(pt.post_count / 10, 40))}
-              fillColor={pt.engagement_type === 'technical' ? '0f62fe' : pt.engagement_type === 'nontechnical' ? 'da1e28' : '8d8d8d'}
+              fillColor={color}
               color="white"
               weight={2}
               opacity={1}
@@ -142,6 +142,39 @@ const InteractiveMap = ({ activeFilter, onMarkerClick }) => {
           box-shadow: 0 10px 30px rgba(0,0,0,0.1);
         }
       `}} />
+
+      {/* Modern Legend Overlay */}
+      <div style={{
+        position: 'absolute',
+        bottom: '24px',
+        left: '24px',
+        background: 'rgba(255, 255, 255, 0.9)',
+        backdropFilter: 'blur(12px)',
+        padding: '16px',
+        borderRadius: '16px',
+        boxShadow: '0 8px 32px rgba(0,0,0,0.1)',
+        zIndex: 1000,
+        border: '1px solid rgba(255,255,255,0.4)',
+        minWidth: '200px'
+      }}>
+        <div style={{ fontSize: '0.65rem', fontWeight: 800, color: '#86868b', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '12px' }}>
+          Engagement Taxonomy
+        </div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#0f62fe' }}></div>
+            <span style={{ fontSize: '0.8rem', fontWeight: 500, color: '#1d1d1f' }}>Technical Engagement</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#fa4d56' }}></div>
+            <span style={{ fontSize: '0.8rem', fontWeight: 500, color: '#1d1d1f' }}>Non-Technical / Outreach</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <div style={{ width: '10px', height: '10px', borderRadius: '50%', background: '#8d8d8d' }}></div>
+            <span style={{ fontSize: '0.8rem', fontWeight: 500, color: '#1d1d1f' }}>General / Unknown</span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
