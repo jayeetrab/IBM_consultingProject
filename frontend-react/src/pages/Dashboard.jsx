@@ -346,6 +346,7 @@ function Dashboard() {
   const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, analytics, posts, insights
   const [isSyncing, setIsSyncing] = useState(false);
   const [dataMode, setDataMode] = useState('demo'); // 'demo' or 'live'
+  const [explorationMode, setExplorationMode] = useState('reset');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -378,6 +379,7 @@ function Dashboard() {
   };
 
   const handleExplorationChange = (mode) => {
+    setExplorationMode(mode);
     if (mode === 'tech-hubs') {
       setActiveFilter('technical');
     } else if (mode === 'recent-activity') {
