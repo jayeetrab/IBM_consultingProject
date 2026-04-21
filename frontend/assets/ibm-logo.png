@@ -1,0 +1,4 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 80 32">
+  <style>.ibm{fill:#FFFFFF;}</style>
+  <path class="ibm" d="M0 24h8v-2H0v2zm0-4h8v-2H0v2zm2-4h4v-2H2v2zm0-4h4V10H2v2zm0-4h4V6H2v2zM10 24h8v-2h-8v2zm0-4h8v-2h-8v2zm2-4h4v-2h-4v2zm0-8h4V6h-4v2zm0 4h4v-2h-4v2zM20 24h12v-2H20v2zm0-4h12v-2H20v2zm2-4h3v-2h-3v2zm5 4h3v-2h-3v2zm-5-8h3V10h-3v2zm5 0h3V10h-3v2zm-5-4h3V6h-3v2zm5 0h3V6h-3v2zm3 8h3v-2h-3v2zM34 24h12v-2H34v2zm0-4h12v-2H34v2zm2-4h3v-2h-3v2zm5 4h3v-2h-3v2zm-5-8h3V10h-3v2zm5 0h3V10h-3v2zm-5-4h3V6h-3v2zm5 0h3V6h-3v2zm3 8h3v-2h-3v2z"/>
+</svg>

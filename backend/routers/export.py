@@ -44,28 +44,6 @@ async def export_xlsx():
                     val = str(val)
                 worksheet.write(row, col, val)
                 
-    # Sheet 3: Sentiment Analysis
-    ws_sentiment = workbook.add_worksheet("Sentiment Matrix")
-    ws_sentiment.write(0, 0, "university", bold)
-    ws_sentiment.write(0, 1, "positive", bold)
-    ws_sentiment.write(0, 2, "neutral", bold)
-    ws_sentiment.write(0, 3, "negative", bold)
-
-    # Re-calculate or group by sentiment
-    sent_matrix = defaultdict(lambda: defaultdict(int))
-    for p in posts:
-        sent = p.get("sentiment", "neutral")
-        for uni in (p.get("universities") or ["Unknown"]):
-            sent_matrix[uni][sent] += 1
-
-    row = 1
-    for uni, counts in sorted(sent_matrix.items(), key=lambda x: -sum(x[1].values())):
-        ws_sentiment.write(row, 0, uni)
-        ws_sentiment.write(row, 1, counts.get("positive", 0))
-        ws_sentiment.write(row, 2, counts.get("neutral", 0))
-        ws_sentiment.write(row, 3, counts.get("negative", 0))
-        row += 1
-
     workbook.close()
     buffer.seek(0)
     return StreamingResponse(

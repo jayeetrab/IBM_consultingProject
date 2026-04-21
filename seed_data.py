@@ -65,19 +65,10 @@ for i in range(NUM_POSTS):
     
     content += f" @{uni[0].replace(' ','')}"
     
-    # Use the live classifier for seeding consistency
-    from backend.nlp.classifier import process_text
-    nlp_stats = process_text(content)
-    
     posts.append({
         "id": f"EXT_{i}_{random.randint(1000,99999)}",
         "source": pltfw,
         "text": content,
-        "clean_text": content.lower(),
-        "universities": [uni[0]],
-        "engagement_type": nlp_stats["engagement_type"],
-        "is_mock": True,
-        "pipeline_version": "v2.0-seed",
         "clean_text": content.lower(),
         "universities": [uni[0]],
         "keywords": {
@@ -85,8 +76,8 @@ for i in range(NUM_POSTS):
             "technical": ["ibm", "model", "python"] if cat_name in ["AI", "Data Science"] else ["workshop", "society"]
         },
         "sentiment": {
-            "label": nlp_stats["sentiment"]["label"],
-            "compound": nlp_stats["sentiment"]["score"]
+            "label": default_sent,
+            "compound": 0.8 if default_sent == 'positive' else 0.0
         },
         "score": random.randint(10, 500),
         "created_at": datetime.utcnow() - timedelta(days=days_ago),
@@ -101,11 +92,11 @@ async def insert_geo(posts_list):
     agg = {}
     for p in posts_list:
         u_name = p['universities'][0]
-        e_type = p['engagement_type']
-        key = (u_name, e_type)
+        c_name = p['keywords']['matched_categories'][0]
+        key = (u_name, c_name)
         agg[key] = agg.get(key, 0) + 1
         
-    for (u_name, e_type), count in agg.items():
+    for (u_name, c_name), count in agg.items():
         u_data = uni_map[u_name]
         docs.append({
             "university": u_name,
@@ -113,7 +104,7 @@ async def insert_geo(posts_list):
             "longitude": u_data[2],
             "region": u_data[3],
             "country": u_data[4],
-            "engagement_type": e_type,
+            "category": c_name,
             "post_count": count,
             "last_updated": datetime.utcnow()
         })

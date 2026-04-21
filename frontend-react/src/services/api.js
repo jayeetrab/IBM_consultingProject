@@ -20,17 +20,11 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Add response interceptors for standardized error reporting
+// Add response interceptors here for better error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const message = error.response?.data?.detail || error.response?.data?.message || error.message;
-    console.error(' [API Error] ', message);
-    
-    // We can also attach the cleaned message to the error object 
-    // so components can display it easily.
-    error.readableMessage = message;
-    
+    console.error('API Error:', error.response?.data || error.message);
     return Promise.reject(error);
   }
 );
