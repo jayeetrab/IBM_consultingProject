@@ -27,7 +27,6 @@ except ImportError:
     from services.scheduler import start_scheduler
 
 from backend.routers import posts, map, timeline, analytics, export, ingest, auth, admin
-from datetime import datetime
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -52,12 +51,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "https://ibm-consulting-project.vercel.app",
-        "http://localhost:5173",
-        "http://localhost:3000"
-    ],
-    allow_credentials=True,
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"]
 )
@@ -71,25 +65,22 @@ app.include_router(ingest.router,    prefix="/api/ingest",    tags=["Ingestion"]
 app.include_router(auth.router,      prefix="/api/auth",      tags=["Auth"])
 app.include_router(admin.router,     prefix="/api/admin",     tags=["Admin"])
 
-
 @app.get("/")
 async def root():
     """
-    Standard heartbeat endpoint for monitoring and cronjobs.
+    Root endpoint to provide a heartbeat response for monitoring and cronjobs.
     """
     return {
         "status": "healthy",
         "service": "IBM Campus Pulse API",
-        "timestamp": datetime.utcnow().isoformat()
+        "version": "1.0.0",
+        "message": "Backend is active and responding to heartbeats."
     }
 
 @app.get("/api/health")
 async def health_check():
     return {
         "status": "ok", 
-        "environment": "vercel" if os.environ.get("VERCEL") else "render" if os.environ.get("RENDER") else "local"
+        "environment": "vercel" if os.environ.get("VERCEL") else "render" if os.environ.get("RENDER") else "local",
+        "timestamp": os.environ.get("RENDER_EXTERNAL_URL", "local")
     }
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)

@@ -8,7 +8,6 @@ import Dashboard from './pages/Dashboard';
 import SentimentDetail from './pages/SentimentDetail';
 import CategoryDetail from './pages/CategoryDetail';
 import BenchmarkDetail from './pages/BenchmarkDetail';
-import UniversityIntelligence from './pages/UniversityIntelligence';
 
 function App() {
   return (
@@ -21,7 +20,6 @@ function App() {
           <Route path="/analytics/sentiment" element={<SentimentDetail />} />
           <Route path="/analytics/categories" element={<CategoryDetail />} />
           <Route path="/analytics/benchmark" element={<BenchmarkDetail />} />
-          <Route path="/university/:name" element={<UniversityIntelligence />} />
         </Route>
 
         <Route path="*" element={<Navigate to="/dashboard" replace />} />

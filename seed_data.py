@@ -35,97 +35,100 @@ UNIVERSITIES = [
     ("University of York", 53.9461, -1.0511, "Yorkshire", "UK")
 ]
 
-NUM_POSTS = 500
+NUM_POSTS = 1000
 
-async def generate_mock_data():
-    posts = []
-    categories = [
-        ('AI', 'technical'),
-        ('Data Science', 'technical'),
-        ('Design Thinking', 'technical'),
-        ('AI and Law', 'technical'),
-        ('IBM SkillsBuild', 'non_technical'),
-        ('Hackathons', 'technical'),
-        ('Open Source', 'technical'),
-        ('Student Societies', 'non_technical'),
-        ('Outreach Events', 'non_technical'),
-        ('Careers', 'non_technical')
+posts = []
+for i in range(NUM_POSTS):
+    cats = [
+        ('AI', 'Our students just completed a hands-on workshop building LLMs with IBM Watsonx.ai! #Watsonx #IBM', 'github', 'positive'),
+        ('AI', 'Fascinating guest lecture from IBM Research on the future of generative AI models and alignment.', 'devto', 'positive'),
+        ('AI', 'Using IBM Granite foundation models to power our new student society chatbot. Very impressive latency.', 'hackernews', 'positive'),
+        ('Data Science', 'Cleaning and analyzing enterprise datasets using IBM SPSS Modeler today. Great UI for workflows.', 'devto', 'neutral'),
+        ('Data Science', 'IBM Z mainframes process 30 billion transactions a day! Mind blown during the guest tech talk. #IBMZ', 'hackernews', 'positive'),
+        ('Design Thinking', 'We hosted an amazing Enterprise Design Thinking workshop led by the IBM Garage team today!', 'github', 'positive'),
+        ('Design Thinking', 'Learning to frame user-centric problems using the IBM Design Thinking framework. The loops make so much sense.', 'devto', 'positive'),
+        ('AI and Law', 'Exploring the ethical implications of AI governance and Watsonx.governance in legal tech at our seminar.', 'github', 'neutral'),
+        ('IBM SkillsBuild', 'Just earned my Enterprise Cybersecurity badge on IBM SkillsBuild. Highly recommended curriculum!', 'devto', 'positive'),
+        ('IBM SkillsBuild', 'The AI fundamentals course on IBM SkillsBuild provided a great foundation for our robotics team.', 'hackernews', 'positive'),
+        ('Hackathons', 'We are hosting a 48-hour global Call for Code hackathon this weekend powered by IBM Cloud!', 'hackernews', 'positive'),
+        ('Hackathons', 'Our team won 2nd place using Watson APIs at the regional hybrid cloud hackathon! #IBMCloud', 'devto', 'positive'),
+        ('Open Source', 'Pushed a huge PR to the open source Qiskit repository for IBM Quantum. #Qiskit', 'github', 'positive'),
+        ('Open Source', 'Contributing to the Red Hat OpenShift project today. The ecosystem is massive.', 'github', 'neutral'),
+        ('Student Societies', 'The CS student society is meeting to discuss the new IBM Quantum roadmap and Qiskit 1.0.', 'devto', 'neutral'),
+        ('Student Societies', 'IBM Z Ambassadors club meeting tonight: we will be covering mainframe modernization concepts.', 'github', 'positive'),
+        ('Outreach Events', 'The IBM Consulting outreach team came to our campus to discuss graduate tech roles.', 'hackernews', 'positive'),
+        ('Outreach Events', 'Really enjoyed the Extreme Blue internship presentation by the IBM UK team today.', 'devto', 'positive')
     ]
+    cat_name, content, pltfw, default_sent = random.choice(cats)
+    uni = random.choice(UNIVERSITIES)
+    days_ago = random.randint(0, 30)
     
-    contents = {
-        'AI': [
-            'Our students just completed a hands-on workshop building LLMs with IBM Watsonx.ai! #Watsonx #IBM',
-            'Fascinating guest lecture from IBM Research on the future of generative AI models and alignment.',
-            'Using IBM Granite foundation models to power our new student society chatbot. Very impressive latency.'
-        ],
-        'Data Science': [
-            'Cleaning and analyzing enterprise datasets using IBM SPSS Modeler today. Great UI for workflows.',
-            'IBM Z mainframes process 30 billion transactions a day! Mind blown during the guest tech talk. #IBMZ'
-        ],
-        'Outreach Events': [
-            'The IBM Consulting outreach team came to our campus to discuss graduate tech roles.',
-            'Really enjoyed the Extreme Blue internship presentation by the IBM UK team today.'
-        ]
-    }
+    content += f" @{uni[0].replace(' ','')}"
     
-    platforms = ['reddit', 'github', 'devto', 'hackernews']
-    sentiments = ['positive', 'neutral', 'negative']
+    # Use the live classifier for seeding consistency
+    from backend.nlp.classifier import process_text
+    nlp_stats = process_text(content)
+    
+    posts.append({
+        "id": f"EXT_{i}_{random.randint(1000,99999)}",
+        "source": pltfw,
+        "text": content,
+        "clean_text": content.lower(),
+        "universities": [uni[0]],
+        "engagement_type": nlp_stats["engagement_type"],
+        "is_mock": True,
+        "pipeline_version": "v2.0-seed",
+        "clean_text": content.lower(),
+        "universities": [uni[0]],
+        "keywords": {
+            "matched_categories": [cat_name],
+            "technical": ["ibm", "model", "python"] if cat_name in ["AI", "Data Science"] else ["workshop", "society"]
+        },
+        "sentiment": {
+            "label": nlp_stats["sentiment"]["label"],
+            "compound": nlp_stats["sentiment"]["score"]
+        },
+        "score": random.randint(10, 500),
+        "created_at": datetime.utcnow() - timedelta(days=days_ago),
+        "url": f"https://{pltfw}.example.com/post/{i}"
+    })
 
-    for i in range(NUM_POSTS):
-        cat_name, engage_type = random.choice(categories)
-        uni = random.choice(UNIVERSITIES)
-        platform = random.choice(platforms)
-        sentiment = random.choices(sentiments, weights=[0.6, 0.3, 0.1])[0]
-        days_ago = random.randint(0, 30)
+async def insert_geo(posts_list):
+    uni_map = {u[0]: u for u in UNIVERSITIES}
+    await geo_collection.delete_many({})
+    docs = []
+    
+    agg = {}
+    for p in posts_list:
+        u_name = p['universities'][0]
+        e_type = p['engagement_type']
+        key = (u_name, e_type)
+        agg[key] = agg.get(key, 0) + 1
         
-        base_content = random.choice(contents.get(cat_name, ["Exploring IBM tech and engagement potential."]))
-        content = f"{base_content} @{uni[0].replace(' ','')}"
-        
-        posts.append({
-            "id": f"MOCK_{i}_{random.randint(1000,99999)}",
-            "source": platform,
-            "text": content,
-            "clean_text": content.lower(),
-            "universities": [uni[0]],
-            "category": cat_name,
-            "engagement_type": engage_type,
-            "is_mock": True,
-            "pipeline_version": "v2.0-seed",
-            "keywords": {
-                "matched_categories": [cat_name],
-                "technical": ["ibm", "watson", "cloud"] if engage_type == 'technical' else []
-            },
-            "sentiment": {
-                "label": sentiment,
-                "compound": 0.8 if sentiment == 'positive' else -0.5 if sentiment == 'negative' else 0.0
-            },
-            "score": random.randint(10, 500),
-            "created_at": datetime.utcnow() - timedelta(days=days_ago),
-            "url": f"https://{platform}.example.com/pulse/{i}",
-            "geo_data": {
-                uni[0]: {"lat": uni[1], "lon": uni[2], "region": uni[3], "country": uni[4]}
-            }
+    for (u_name, e_type), count in agg.items():
+        u_data = uni_map[u_name]
+        docs.append({
+            "university": u_name,
+            "latitude": u_data[1],
+            "longitude": u_data[2],
+            "region": u_data[3],
+            "country": u_data[4],
+            "engagement_type": e_type,
+            "post_count": count,
+            "last_updated": datetime.utcnow()
         })
-    return posts
+    if docs:
+        await geo_collection.insert_many(docs)
 
 async def main():
-    print("🚀 Starting Seed Data Provisioning...")
     await init_db()
     
-    # Clear existing data for a fresh start
     await posts_collection.delete_many({})
-    await geo_collection.delete_many({})
     
-    mock_posts = await generate_mock_data()
+    await save_posts(posts)
+    await insert_geo(posts)
     
-    # Use the existing save_posts logic which handles both posts and geo entries
-    await save_posts(mock_posts)
-    
-    total_posts = await posts_collection.count_documents({})
-    total_geo = await geo_collection.count_documents({})
-    
-    print(f"✅ Success! Seeded {total_posts} posts and {total_geo} geo-intelligence records.")
-    print("Database is now normalized for the Intelligence Command Hub v2.0.")
+    print(f"✅ Seeded {len(posts)} mock posts across {len(UNIVERSITIES)} universities into the database.")
 
 if __name__ == "__main__":
     asyncio.run(main())

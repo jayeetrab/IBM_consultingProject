@@ -12,6 +12,9 @@ class PostOut(BaseModel):
     sentiment_score: float
     category: str
     score: int
+    engagement_type: str
+    is_mock: bool
+    pipeline_version: str
     created_at: datetime
     url: str
 
@@ -25,12 +28,14 @@ class GeoPoint(BaseModel):
     region: str
     country: str
     category: str
+    engagement_type: str
     post_count: int
     avg_sentiment: str
 
 class TimelinePoint(BaseModel):
     date: str
     category: str
+    engagement_type: str
     post_count: int
 
 class TopUniversity(BaseModel):

@@ -5,7 +5,6 @@ from fastapi import APIRouter
 from fastapi.responses import StreamingResponse
 from backend.database.db_manager import get_all_posts_list
 from io import BytesIO
-from collections import defaultdict
 
 router = APIRouter()
 
@@ -29,22 +28,19 @@ async def export_xlsx():
     posts = await get_all_posts_list()
     buffer = BytesIO()
     workbook = xlsxwriter.Workbook(buffer)
-    bold = workbook.add_format({'bold': True})
     worksheet = workbook.add_worksheet("Engagement Data")
     
     if posts:
         # Write headers
         headers = list(posts[0].keys())
         for col, header in enumerate(headers):
-            worksheet.write(0, col, header, bold)
+            worksheet.write(0, col, header)
         
         # Write data
         for row, post in enumerate(posts, start=1):
             for col, header in enumerate(headers):
                 val = post.get(header)
-                if val is None:
-                    val = ""
-                elif isinstance(val, (list, dict)):
+                if isinstance(val, (list, dict)):
                     val = str(val)
                 worksheet.write(row, col, val)
                 

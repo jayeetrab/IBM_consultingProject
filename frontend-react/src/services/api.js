@@ -20,23 +20,17 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// Add response interceptors here for better error handling
+// Add response interceptors for standardized error reporting
 api.interceptors.response.use(
   (response) => response,
   (error) => {
     const message = error.response?.data?.detail || error.response?.data?.message || error.message;
-    const status = error.response?.status;
+    console.error(' [API Error] ', message);
     
-    console.error(`[API Error ${status || 'Network'}]`, message);
-    
-    if (status === 404) {
-      console.warn("Target endpoint not found. Verify VITE_API_URL and backend routing.");
-    } else if (status === 401 || status === 403) {
-      console.warn("Authentication error. Redirecting to login session.");
-      // Soft handle - actual logout happens in Dashboard.jsx if needed
-    }
-
+    // We can also attach the cleaned message to the error object 
+    // so components can display it easily.
     error.readableMessage = message;
+    
     return Promise.reject(error);
   }
 );

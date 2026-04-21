@@ -34,7 +34,7 @@ const InteractiveMap = ({ activeFilter, onMarkerClick }) => {
       try {
         let url = '/api/map/';
         if (activeFilter !== 'Overall Map') {
-          url += `?category=${encodeURIComponent(activeFilter)}`;
+          url += `?engagement_type=${encodeURIComponent(activeFilter)}`;
         }
         const res = await api.get(url);
         setGeoData(res.data);
@@ -48,9 +48,9 @@ const InteractiveMap = ({ activeFilter, onMarkerClick }) => {
 
   return (
     <div style={{ height: '100%', width: '100%', borderRadius: 'inherit', overflow: 'hidden' }}>
-      <MapContainer 
-        center={[53.0, -2.0]} 
-        zoom={6} 
+      <MapContainer
+        center={[53.0, -2.0]}
+        zoom={6}
         style={{ height: '100%', width: '100%' }}
         zoomControl={false}
       >
@@ -97,7 +97,7 @@ const InteractiveMap = ({ activeFilter, onMarkerClick }) => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
                       <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Trend:</span>
                       <span style={{ fontSize: '0.8rem', color: pt.avg_sentiment === 'positive' ? '#34c759' : '#fa4d56' }}>
-                        {(pt.avg_sentiment || 'neutral').toUpperCase()}
+                        {pt.avg_sentiment.toUpperCase()}
                       </span>
                     </div>
                   </div>
@@ -131,7 +131,8 @@ const InteractiveMap = ({ activeFilter, onMarkerClick }) => {
       </MapContainer>
 
       {/* Inject small global CSS tweak for map popup to look premium */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .leaflet-popup-content-wrapper {
           border-radius: 12px;
           box-shadow: 0 10px 30px rgba(0,0,0,0.1);

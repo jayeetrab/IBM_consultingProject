@@ -100,7 +100,21 @@ async def process_uploaded_data(data: list[dict], is_ibm_open_data: bool = False
 async def trigger_ingest(background_tasks: BackgroundTasks):
     from backend.services.scheduler import run_ingestion
     background_tasks.add_task(run_ingestion)
-    return {"status": "started", "message": "Ingestion running in background"}
+    return {"status": "started", "message": "Global ingestion running in background"}
+
+@router.post("/reddit", response_model=IngestResponse)
+async def trigger_reddit_ingest(background_tasks: BackgroundTasks):
+    from backend.services.ingestion.reddit_ingestor import fetch_all_reddit_engagements
+    
+    async def run_reddit_flow():
+        posts = await fetch_all_reddit_engagements()
+        processed = await run_pipeline(posts)
+        enriched = enrich_posts_with_geo(processed)
+        await save_posts(enriched)
+        print(f"[Reddit Ingest] Manual trigger complete: {len(enriched)} records.")
+
+    background_tasks.add_task(run_reddit_flow)
+    return {"status": "started", "message": "Reddit ingestion started in background"}
 
 @router.post("/upload", response_model=IngestResponse)
 async def upload_dataset(background_tasks: BackgroundTasks, file: UploadFile = File(...)):

@@ -1,9 +1,8 @@
 # import pandas as pd # Removed to reduce bundle size
 from datetime import datetime, timedelta
 from typing import Optional, List
-from backend.database.connection import posts_collection, geo_collection
+from backend.database.connection import posts_collection, geo_collection, audit_logs_collection
 import re
-# import google.generativeai as genai # Removed to reduce bundle size
 import httpx
 from backend.config import settings
 
@@ -11,12 +10,9 @@ async def save_posts(posts: List[dict]):
     if not posts:
         return
     
-    # Motor doesn't have an easy "insert or ignore" natively without an unordered bulk write.
-    # But we set a unique index on (source, external_id) so we can do an unordered insert and ignore DuplicateKeyError
     from pymongo.errors import BulkWriteError
     
     docs_to_insert = []
-    geo_docs = []
     
     def parse_dt(dt_val):
         if not dt_val:
@@ -25,19 +21,17 @@ async def save_posts(posts: List[dict]):
             return dt_val
         if isinstance(dt_val, str):
             try:
-                # Handle ISO format from generate script
                 return datetime.fromisoformat(dt_val.replace('Z', '+00:00'))
             except Exception:
-                # Final fallback
                 return datetime.utcnow()
         return datetime.utcnow()
 
     for p in posts:
-        # Create a document for the post
         post_doc = {
             "source": p["source"],
             "external_id": str(p["id"]),
             "text": p["text"],
+            "authors": [p.get("author")] if p.get("author") else [],
             "clean_text": p.get("clean_text", ""),
             "universities": p.get("universities", []),
             "keywords": p.get("keywords", {}),
@@ -55,22 +49,19 @@ async def save_posts(posts: List[dict]):
         
     if docs_to_insert:
         try:
-            # unordered=True allows it to continue inserting if it hits a duplicate
             await posts_collection.insert_many(docs_to_insert, ordered=False)
         except BulkWriteError:
-             # some inserted, some duplicates. That's fine.
              pass
              
-    # After bulk insert, fetch the inserted ones to create geo engagements
-    # We'll fetch all matching source/ext_id pairs
+    # Fetch inserted/existing posts to create geo engagements
     pairs = [{"source": p["source"], "external_id": str(p["id"])} for p in posts]
     cursor = posts_collection.find({"$or": pairs})
     
-    # Create a mapping of (source, external_id) -> post_id
     post_map = {}
     async for db_post in cursor:
          post_map[(db_post["source"], db_post["external_id"])] = db_post
          
+    geo_docs = []
     for p in posts:
         db_post = post_map.get((p["source"], str(p["id"])))
         if not db_post:
@@ -82,8 +73,8 @@ async def save_posts(posts: List[dict]):
                 geo_docs.append({
                     "post_id": db_post["_id"],
                     "university": uni_name,
-                    "latitude": geo["lat"],
-                    "longitude": geo["lon"],
+                    "latitude": geo["lat"], # Standardized
+                    "longitude": geo["lon"], # Standardized
                     "region": geo["region"],
                     "country": geo["country"],
                     "category": db_post.get("category", "unknown"),
@@ -91,7 +82,7 @@ async def save_posts(posts: List[dict]):
                     "is_mock": db_post.get("is_mock", False),
                     "sentiment": db_post.get("sentiment_label", "neutral"),
                     "post_count": 1,
-                    "last_updated": db_post.get("created_at")
+                    "last_updated": db_post.get("created_at") # Standardized timestamp
                 })
                 
     if geo_docs:
@@ -147,11 +138,7 @@ async def get_geo_engagements(region: Optional[str] = None, category: Optional[s
     if region and region != "Overall Map":
         match_stage["region"] = region
     if category and category != "Overall Map":
-        # Check both the primary category and technical matched categories
-        match_stage["$or"] = [
-            {"category": category},
-            {"keywords.matched_categories": category}
-        ]
+        match_stage["category"] = category
     if engagement_type:
         match_stage["engagement_type"] = engagement_type
     if is_mock is not None:
@@ -179,21 +166,7 @@ async def get_geo_engagements(region: Optional[str] = None, category: Optional[s
                 "engagement_type": "$engagement_type"
             },
             "post_count": {"$sum": "$post_count"},
-            "positive_count": { "$sum": { "$cond": [{ "$eq": ["$sentiment", "positive"] }, 1, 0] } },
-            "negative_count": { "$sum": { "$cond": [{ "$eq": ["$sentiment", "negative"] }, 1, 0] } },
-            "total_records": { "$sum": 1 }
-        }
-    })
-    
-    pipeline.append({
-        "$addFields": {
-            "avg_sentiment": {
-                "$cond": [
-                    { "$gt": ["$positive_count", "$negative_count"] },
-                    "positive",
-                    { "$cond": [{ "$gt": ["$negative_count", "$positive_count"] }, "negative", "neutral"] }
-                ]
-            }
+            "avg_sentiment": {"$first": "$sentiment"} # Simplification: take first for now
         }
     })
     
@@ -217,10 +190,7 @@ async def get_timeline_data(date_from=None, date_to=None, category=None,
                            engagement_type=None, is_mock=None) -> List[dict]:
     query = {}
     if category and category != "Overall Map":
-        if category in ["technical", "non_technical", "unknown"]:
-            query["engagement_type"] = category
-        else:
-            query["category"] = category
+        query["category"] = category
     if engagement_type:
         query["engagement_type"] = engagement_type
     if is_mock is not None:
@@ -233,21 +203,13 @@ async def get_timeline_data(date_from=None, date_to=None, category=None,
         if date_to:
             query["created_at"]["$lte"] = datetime.combine(date_to, datetime.max.time())
             
+    # We want to group by engagement_type for the React charts
     cursor = posts_collection.find(query, {"created_at": 1, "engagement_type": 1})
     from collections import defaultdict
     aggregation = defaultdict(int)
     
     async for p in cursor:
-        dt = p.get("created_at")
-        if not dt:
-            dt = datetime.utcnow()
-        elif isinstance(dt, str):
-            try:
-                dt = datetime.fromisoformat(dt.replace('Z', '+00:00'))
-            except Exception:
-                try: dt = datetime.strptime(dt.split()[0], "%Y-%m-%d")
-                except: dt = datetime.utcnow()
-        
+        dt = p.get("created_at", datetime.utcnow())
         date_str = dt.strftime("%Y-%m-%d")
         engage = p.get("engagement_type", "unknown")
         aggregation[(date_str, engage)] += 1
@@ -256,13 +218,14 @@ async def get_timeline_data(date_from=None, date_to=None, category=None,
     for (date_str, engage), count in aggregation.items():
         result.append({
             "date": date_str,
-            "category": engage, 
+            "category": engage, # Alias to 'category' for frontend compat
             "engagement_type": engage,
             "post_count": count
         })
     
     result.sort(key=lambda x: x["date"])
     return result
+
 
 async def get_top_universities(region=None, engagement_type=None, limit=10) -> List[dict]:
     pipeline = []
@@ -283,7 +246,7 @@ async def get_top_universities(region=None, engagement_type=None, limit=10) -> L
                     "region": "$region",
                     "engagement_type": "$engagement_type"
                 },
-                "post_count": {"$sum": "$post_count"}
+                "post_count": {"$sum": 1}
             }
         },
         {"$sort": {"post_count": -1}},
@@ -300,6 +263,7 @@ async def get_top_universities(region=None, engagement_type=None, limit=10) -> L
             "post_count": row["post_count"]
         })
     return results
+
 
 async def get_keyword_freq(engagement_type="technical") -> List[dict]:
     # We filter by engagement_type now for better relevance
@@ -319,7 +283,8 @@ async def get_keyword_freq(engagement_type="technical") -> List[dict]:
     return [{"keyword": k, "count": v}
             for k, v in sorted(freq.items(), key=lambda x: -x[1])[:20]]
 
-async def get_sentiment_summary() -> List[dict]:
+
+async def get_sentiment_summary() -> list[dict]:
     pipeline = [
         {"$group": {"_id": "$sentiment_label", "count": {"$sum": 1}}}
     ]
@@ -332,7 +297,8 @@ async def get_sentiment_summary() -> List[dict]:
         })
     return results
 
-async def get_source_breakdown() -> List[dict]:
+
+async def get_source_breakdown() -> list[dict]:
     """Provides a distribution of data sources across the ingested pipeline."""
     pipeline = [
         {"$group": {"_id": "$source", "count": {"$sum": 1}}},
@@ -341,7 +307,8 @@ async def get_source_breakdown() -> List[dict]:
     cursor = posts_collection.aggregate(pipeline)
     return [{"source": r["_id"], "count": r["count"]} async for r in cursor]
 
-async def get_sentiment_evolution(category: Optional[str] = None) -> List[dict]:
+
+async def get_sentiment_evolution(category: Optional[str] = None) -> list[dict]:
     """Calculates weighted average sentiment scores over a timeline for trend regression analysis."""
     pipeline = []
     if category and category != "Overall Map":
@@ -361,7 +328,8 @@ async def get_sentiment_evolution(category: Optional[str] = None) -> List[dict]:
     cursor = posts_collection.aggregate(pipeline)
     return [{"date": r["_id"], "score": round(r["avg_sentiment"], 3), "volume": r["volume"]} async for r in cursor]
 
-async def get_category_intersection() -> List[dict]:
+
+async def get_category_intersection() -> list[dict]:
     """Analyzes cross-category technical density to identify multi-disciplinary hubs."""
     # We look for universities that lead in multiple specific categories
     pipeline = [
@@ -393,6 +361,7 @@ async def get_category_intersection() -> List[dict]:
     cursor = posts_collection.aggregate(pipeline)
     return [r async for r in cursor]
 
+
 async def get_all_posts_list() -> List[dict]:
     cursor = posts_collection.find()
     posts = await cursor.to_list(length=None)
@@ -418,6 +387,7 @@ async def get_all_posts_list() -> List[dict]:
             })
     return results
 
+
 async def get_posts(category=None, region=None, limit=50) -> list:
     query = {}
     if category:
@@ -432,6 +402,7 @@ async def get_posts(category=None, region=None, limit=50) -> list:
         del p["_id"]
         
     return posts
+
 
 async def get_benchmark_data(uni1: str, uni2: str) -> dict:
     """Provides a competitive differential matrix between two specific institutions."""
@@ -457,6 +428,7 @@ async def get_benchmark_data(uni1: str, uni2: str) -> dict:
         "uni2": {"name": uni2, "metrics": stats2}
     }
 
+
 async def get_university_posts(university: str, limit: int = 25, category: str = None, engagement_type: str = None, is_mock: bool = None) -> list:
     """Fetch raw posts specifically mentioning a given university."""
     # We do a text search or array match on 'universities'
@@ -476,60 +448,12 @@ async def get_university_posts(university: str, limit: int = 25, category: str =
         del p["_id"]
     return posts
 
+
 import time
+import httpx
+
 _query_cache = {}
 CACHE_TTL = 300  # Cache for 5 minutes
-
-async def get_university_intelligence_summary(university: str) -> dict:
-    """
-    Advanced Aggregation: Returns a high-fidelity intelligence profile for a specific institution,
-    including sentiment volatility, category distribution, and engagement velocity.
-    """
-    # 1. Category Distribution (Technical vs Outreach)
-    pipeline_split = [
-        {"$match": {"universities": university}},
-        {"$group": {"_id": "$engagement_type", "count": {"$sum": 1}}}
-    ]
-    split_res = await posts_collection.aggregate(pipeline_split).to_list(None)
-    category_split = {r["_id"]: r["count"] for r in split_res}
-    
-    # 2. Sentiment Evolution (Longitudinal)
-    pipeline_sent = [
-        {"$match": {"universities": university}},
-        {"$group": {
-            "_id": { "$dateToString": { "format": "%Y-%m-%d", "date": "$created_at" } },
-            "avg_sentiment": {"$avg": "$sentiment_score"},
-            "volume": {"$sum": 1}
-        }},
-        {"$sort": {"_id": 1}}
-    ]
-    sent_res = await posts_collection.aggregate(pipeline_sent).to_list(30)
-    
-    # 3. Regional Benchmark (Compare against others in same region)
-    # First find this uni's region
-    geo_doc = await geo_collection.find_one({"university": university})
-    region = geo_doc["region"] if geo_doc else "Unknown"
-    
-    avg_region_sentiment = 0.0
-    if region != "Unknown":
-        pipeline_reg = [
-            {"$match": {"region": region}},
-            {"$group": {"_id": None, "avg": {"$avg": "$sentiment_score"}}}
-        ]
-        reg_res = await posts_collection.aggregate(pipeline_reg).to_list(1)
-        if reg_res:
-            avg_region_sentiment = reg_res[0]["avg"]
-
-    return {
-        "university": university,
-        "region": region,
-        "category_split": category_split,
-        "sentiment_history": [{"date": r["_id"], "score": round(r["avg_sentiment"], 3), "volume": r["volume"]} for r in sent_res],
-        "benchmarks": {
-            "regional_avg_sentiment": round(avg_region_sentiment, 3),
-            "total_engagements": sum(category_split.values())
-        }
-    }
 
 async def ask_natural_language(query_text: str) -> dict:
     """
@@ -553,25 +477,11 @@ async def ask_natural_language(query_text: str) -> dict:
 
     try:
         # 2. Fetch context data from our database
-        total_posts = await posts_collection.count_documents({})
-        
-        # New Categories - checking both old schema (keywords) and new schema (category)
-        def build_q(name): return {"$or": [{"keywords.matched_categories": name}, {"category": name}]}
-        
-        ai_posts = await posts_collection.count_documents(build_q("AI"))
-        data_science_posts = await posts_collection.count_documents(build_q("Data Science"))
-        design_thinking_posts = await posts_collection.count_documents(build_q("Design Thinking"))
-        ai_law_posts = await posts_collection.count_documents(build_q("AI and Law"))
-        skillsbuild_posts = await posts_collection.count_documents(build_q("IBM SkillsBuild"))
-        hackathon_posts = await posts_collection.count_documents(build_q("Hackathons"))
-        open_source_posts = await posts_collection.count_documents(build_q("Open Source"))
-        society_posts = await posts_collection.count_documents(build_q("Student Societies"))
-        outreach_posts = await posts_collection.count_documents(build_q("Outreach Events"))
-        
+        # Fetch simplified engagement context
         technical_posts = await posts_collection.count_documents({"engagement_type": "technical"})
         non_technical_posts = await posts_collection.count_documents({"engagement_type": "non_technical"})
         unknown_posts = await posts_collection.count_documents({"engagement_type": "unknown"})
-
+        
         top_unis = await get_top_universities(limit=5)
         uni_context = ", ".join([f"{u['university']} ({u['post_count']} posts)" for u in top_unis]) if top_unis else "No data yet."
         
@@ -583,18 +493,10 @@ async def ask_natural_language(query_text: str) -> dict:
 Your goal is to answer the user's query intelligently, concisely, and professionally. 
 You MUST base your statistical answers strictly on the following real-time ingested data from our database:
 
-- Total tech/strategic engagements tracked across UK/Ireland: {total_posts}
-- AI & Watsonx: {ai_posts}
-- Data Science & Engineering: {data_science_posts}
-- Design Thinking & UX: {design_thinking_posts}
-- AI & Law / Ethics: {ai_law_posts}
-- IBM SkillsBuild: {skillsbuild_posts}
-- Hackathons: {hackathon_posts}
-- Open Source Contributions: {open_source_posts}
-- Student Societies: {society_posts}
-- Outreach Events: {outreach_posts}
-- Technical (v2.0): {technical_posts}
-- Non-Technical (v2.0): {non_technical_posts}
+- Total university engagements tracked: {total_posts}
+- Technical (Coding, AI, Data, Engineering): {technical_posts}
+- Non-Technical (Careers, Outreach, Societies): {non_technical_posts}
+- Unknown/General: {unknown_posts}
 - Top Universities by engagement volume: {uni_context}
 - Overall Sentiment Distribution: {sentiment_context}
 

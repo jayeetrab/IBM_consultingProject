@@ -41,67 +41,75 @@ const SentimentDetail = () => {
       </header>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '32px' }}>
-        {/* Advanced Temporal Matrix */}
-        <div className="card" style={{ padding: '40px', minHeight: '520px' }}>
+        {/* Main Evolution Chart */}
+        <div className="card" style={{ padding: '40px', minHeight: '500px' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
             <h3 style={{ fontSize: '1.5rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '12px' }}>
               <TrendingUp size={24} color="var(--accent-blue)" />
-              Reputation Velocity Topology
+              Temporal Regression Matrix
             </h3>
             <div style={{ display: 'flex', gap: '12px' }}>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600 }}>
-                 <div style={{ width: '12px', height: '12px', borderRadius: '2px', background: 'var(--accent-blue)', opacity: 0.5 }}></div> Density
+               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                 <div style={{ width: '12px', height: '12px', borderRadius: '2px', background: 'var(--accent-blue)' }}></div> Volume
                </div>
-               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.85rem', fontWeight: 600 }}>
-                 <div style={{ width: '12px', height: '2px', background: '#34c759' }}></div> Sentiment Vector
+               <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.9rem', color: 'var(--text-secondary)' }}>
+                 <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#34c759' }}></div> Sentiment Score
                </div>
             </div>
           </div>
 
           {loading ? (
-             <div style={{ height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Activity size={32} className="spin" color="var(--accent-blue)" /></div>
+            <div style={{ height: '400px', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>Loading Big Data...</div>
+          ) : data.length === 0 ? (
+            <div style={{ height: '400px', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', border: '1px dashed var(--border-strong)', borderRadius: '16px', background: 'rgba(0,0,0,0.02)' }}>
+               <Search size={48} color="var(--text-tertiary)" style={{ marginBottom: '16px' }} />
+               <div style={{ fontWeight: 700, fontSize: '1.25rem', color: 'var(--text-primary)' }}>No Intelligence Data Found</div>
+               <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>Please go to Settings &gt; Dataset Upload to populate the database.</p>
+            </div>
           ) : (
             <div style={{ width: '100%', height: '400px' }}>
               <ResponsiveContainer width="100%" height="100%">
                 <ComposedChart data={data}>
                   <defs>
-                    <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#34c759" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#34c759" stopOpacity={0}/>
+                    <linearGradient id="colorVol" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="var(--accent-blue)" stopOpacity={0.1}/>
+                      <stop offset="95%" stopColor="var(--accent-blue)" stopOpacity={0}/>
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="rgba(0,0,0,0.05)" />
-                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 11, fontWeight: 600 }} />
-                  <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
-                  <YAxis yAxisId="right" orientation="right" domain={[-1, 1]} axisLine={false} tickLine={false} tick={{ fontSize: 11 }} />
+                  <XAxis dataKey="date" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-tertiary)' }} />
+                  <YAxis yAxisId="left" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-tertiary)' }} />
+                  <YAxis yAxisId="right" orientation="right" domain={[-1, 1]} axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-tertiary)' }} />
                   <Tooltip 
-                    contentStyle={{ borderRadius: '16px', border: 'none', background: 'var(--bg-secondary)', boxShadow: '0 20px 50px rgba(0,0,0,0.15)' }}
-                    cursor={{ stroke: 'var(--accent-blue)', strokeWidth: 1, strokeDasharray: '4 4' }}
+                    contentStyle={{ borderRadius: '16px', border: '1px solid var(--border-strong)', background: 'var(--bg-secondary)', fontWeight: 600, boxShadow: '0 10px 40px rgba(0,0,0,0.1)' }}
                   />
-                  <Area yAxisId="right" type="monotone" dataKey="score" fill="url(#colorScore)" stroke="#34c759" strokeWidth={3} name="Sentiment Vector" />
-                  <Bar yAxisId="left" dataKey="volume" fill="var(--accent-blue)" radius={[4, 4, 0, 0]} opacity={0.4} barSize={24} name="Engagement Traffic" />
+                  <Bar yAxisId="left" dataKey="volume" fill="var(--accent-blue)" radius={[4, 4, 0, 0]} opacity={0.3} barSize={40} />
+                  <Area yAxisId="left" type="monotone" dataKey="volume" fill="url(#colorVol)" stroke="none" />
+                  <Line yAxisId="right" type="monotone" dataKey="score" stroke="#34c759" strokeWidth={4} dot={{ r: 6, fill: '#34c759', strokeWidth: 2, stroke: '#fff' }} activeDot={{ r: 8 }} />
                 </ComposedChart>
               </ResponsiveContainer>
             </div>
           )}
         </div>
 
-        {/* Intelligence Quadrants */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px' }}>
-          <div className="card" style={{ padding: '32px', borderLeft: '4px solid #34c759' }}>
-             <div style={{ fontWeight: 800, color: 'var(--text-tertiary)', fontSize: '0.7rem', textTransform: 'uppercase', marginBottom: '8px' }}>Reputational Peak</div>
-             <div style={{ fontSize: '2rem', fontWeight: 900 }}>+0.92</div>
-             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '8px' }}>Maximized positive alignment detected in recent activity clusters.</p>
+        {/* Actionable Insights Grid */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px' }}>
+          <div className="card" style={{ padding: '24px' }}>
+            <div style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>Engagement Ceiling</div>
+            <div style={{ fontSize: '2rem', fontWeight: 800 }}>{Math.max(...data.map(d => d.volume), 0)}</div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '8px' }}>Highest recorded volume in a single temporal cycle.</p>
           </div>
-          <div className="card" style={{ padding: '32px', borderLeft: '4px solid var(--accent-blue)' }}>
-             <div style={{ fontWeight: 800, color: 'var(--text-tertiary)', fontSize: '0.7rem', textTransform: 'uppercase', marginBottom: '8px' }}>Volatility Index</div>
-             <div style={{ fontSize: '2rem', fontWeight: 900 }}>Low</div>
-             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '8px' }}>Predictive stability is currently high with minimal variance across sources.</p>
+          <div className="card" style={{ padding: '24px' }}>
+            <div style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>Mean Reputational Index</div>
+            <div style={{ fontSize: '2rem', fontWeight: 800, color: '#34c759' }}>
+               {(data.reduce((acc, d) => acc + d.score, 0) / (data.length || 1)).toFixed(2)}
+            </div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '8px' }}>Average processed sentiment across the entire longitudinal set.</p>
           </div>
-          <div className="card" style={{ padding: '32px', borderLeft: '4px solid var(--accent-red)' }}>
-             <div style={{ fontWeight: 800, color: 'var(--text-tertiary)', fontSize: '0.7rem', textTransform: 'uppercase', marginBottom: '8px' }}>Anomaly Vectors</div>
-             <div style={{ fontSize: '2rem', fontWeight: 900 }}>0 Detected</div>
-             <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '8px' }}>Real-time outlier detection indicates zero critical reputational threats.</p>
+          <div className="card" style={{ padding: '24px' }}>
+            <div style={{ color: 'var(--text-tertiary)', fontSize: '0.8rem', fontWeight: 700, textTransform: 'uppercase', marginBottom: '8px' }}>Anomaly Detection</div>
+            <div style={{ fontSize: '1.2rem', fontWeight: 700, color: 'var(--accent-red)' }}>None Detected</div>
+            <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginTop: '8px' }}>No statistical outliers identified in recent clusters.</p>
           </div>
         </div>
       </div>

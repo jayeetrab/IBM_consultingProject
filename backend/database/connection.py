@@ -36,34 +36,28 @@ async def init_db():
         # 5. Institutional Density Index
         await geo_collection.create_index([("university", 1), ("engagement_type", 1)])
         
-        # 6. Post-Geo Relationship Index (Enforce Uniqueness)
-        # Drop previous if exists to change specs
-        try:
-            await geo_collection.drop_index("post_id_1_university_1")
-        except:
-            pass
-        await geo_collection.create_index([("post_id", 1), ("university", 1)], unique=True, sparse=True)
+        # 6. Post-Geo Relationship Index
+        await geo_collection.create_index([("post_id", 1), ("university", 1)])
         
         # 7. Authentication Unique Index
         await users_collection.create_index([("email", 1)], unique=True)
         
-        # Provision Administrator account
+        # Hardcode plaintext Administrator account logic
         existing_admin = await users_collection.find_one({"email": "admin"})
         if not existing_admin:
             await users_collection.insert_one({
                 "email": "admin",
-                "password": "admin", # Plaintext storage to fulfill requirements
-                "name": "System Administrator",
-                "role": "admin"
+                "password": "admin",
+                "name": "System Administrator"
             })
-            print("System Administrator account provisioned.")
+            print("System Administrator plaintext account provisioned.")
             
             # Initial Audit Log
             from datetime import datetime
             await audit_logs_collection.insert_one({
                 "action": "system_init",
                 "user": "System",
-                "details": "Provisioned secure admin account with v2.0 index suite",
+                "details": "Provisioned plaintext admin account",
                 "timestamp": datetime.utcnow()
             })
             
@@ -72,6 +66,3 @@ async def init_db():
         print(f"CRITICAL: Database connection failed: {e}")
         # We don't raise here to allow the app to start and show a health check error
         # rather than hanging Render's deployment indefinitely.
-
-def get_db():
-    return db
