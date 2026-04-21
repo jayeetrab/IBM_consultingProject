@@ -78,8 +78,6 @@ for i in range(NUM_POSTS):
         "engagement_type": nlp_stats["engagement_type"],
         "is_mock": True,
         "pipeline_version": "v2.0-seed",
-        "clean_text": content.lower(),
-        "universities": [uni[0]],
         "keywords": {
             "matched_categories": [cat_name],
             "technical": ["ibm", "model", "python"] if cat_name in ["AI", "Data Science"] else ["workshop", "society"]

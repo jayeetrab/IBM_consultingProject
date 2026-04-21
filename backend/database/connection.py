@@ -36,28 +36,30 @@ async def init_db():
         # 5. Institutional Density Index
         await geo_collection.create_index([("university", 1), ("engagement_type", 1)])
         
-        # 6. Post-Geo Relationship Index
-        await geo_collection.create_index([("post_id", 1), ("university", 1)])
+        # 6. Post-Geo Relationship Index (Enforce Uniqueness)
+        await geo_collection.create_index([("post_id", 1), ("university", 1)], unique=True, sparse=True)
         
         # 7. Authentication Unique Index
         await users_collection.create_index([("email", 1)], unique=True)
         
-        # Hardcode plaintext Administrator account logic
+        # Provision Secure Administrator account
         existing_admin = await users_collection.find_one({"email": "admin"})
         if not existing_admin:
+            from backend.services.auth_handler import get_password_hash
             await users_collection.insert_one({
                 "email": "admin",
-                "password": "admin",
-                "name": "System Administrator"
+                "password": get_password_hash("admin"), # Default secure hash
+                "name": "System Administrator",
+                "role": "admin"
             })
-            print("System Administrator plaintext account provisioned.")
+            print("System Administrator secure account provisioned.")
             
             # Initial Audit Log
             from datetime import datetime
             await audit_logs_collection.insert_one({
                 "action": "system_init",
                 "user": "System",
-                "details": "Provisioned plaintext admin account",
+                "details": "Provisioned secure admin account with v2.0 hashing",
                 "timestamp": datetime.utcnow()
             })
             

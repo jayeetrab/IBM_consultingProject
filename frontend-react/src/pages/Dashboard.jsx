@@ -16,11 +16,31 @@ import ibmLogo from '../assets/ibm-logo.png';
 import bristolLogo from '../assets/bristol-logo.png';
 
 
+const SkeletonCard = () => (
+  <div className="card" style={{ padding: '32px', height: '400px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
+    <div style={{ width: '60%', height: '24px', background: 'var(--border-light)', borderRadius: '4px', animation: 'shimmer 1.5s infinite linear' }}></div>
+    <div style={{ flexGrow: 1, background: 'var(--bg-primary)', borderRadius: '12px', border: '1px solid var(--border-light)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Activity size={32} className="spin" color="var(--border-strong)" />
+    </div>
+    <div style={{ height: '40px', background: 'var(--border-light)', borderRadius: '8px', animation: 'shimmer 1.5s infinite linear' }}></div>
+    <style>{`
+      @keyframes shimmer {
+        0% { opacity: 0.5; }
+        50% { opacity: 1; }
+        100% { opacity: 0.5; }
+      }
+    `}</style>
+  </div>
+);
+
 const BusinessAnalyticsGrid = () => {
   const navigate = useNavigate();
   const [categoryData, setCategoryData] = useState([]);
   const [sourceData, setSourceData] = useState([]);
   const [keywordData, setKeywordData] = useState([]);
+  const [pieData, setPieData] = useState([]);
+  const [barData, setBarData] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     setLoading(true);
@@ -32,29 +52,29 @@ const BusinessAnalyticsGrid = () => {
       api.get('/api/analytics/category-intersection')
     ])
       .then(([sentRes, structRes, sourceRes, keyRes, catRes]) => {
-        // 1. Sentiment
-        const formattedPie = sentRes.data.map(s => ({
+        setPieData(sentRes.data.map(s => ({
           name: s.label.toUpperCase(),
           value: s.count,
           color: s.label === 'positive' ? '#34c759' : s.label === 'negative' ? '#fa4d56' : '#8d8d8d'
-        }));
-        setPieData(formattedPie);
-
-        // 2. Institutions
+        })));
         setBarData((structRes.data.tech_interest || []).map(t => ({ name: t.university, engagements: t.count })));
-
-        // 3. Sources
         setSourceData(sourceRes.data.map(s => ({ name: s.source.toUpperCase(), value: s.count })));
-
-        // 4. Keywords
         setKeywordData(keyRes.data.slice(0, 10));
-
-        // 5. Categories
         setCategoryData(catRes.data);
       })
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
   }, []);
+
+  if (loading) {
+    return (
+      <div style={{ padding: '0 2rem 4rem', maxWidth: '1400px', margin: '-1rem auto 0' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(600px, 1fr))', gap: '32px' }}>
+          {[1,2,3,4].map(i => <SkeletonCard key={i} />)}
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div style={{ padding: '0 2rem 4rem', maxWidth: '1400px', margin: '-1rem auto 0' }}>
@@ -248,9 +268,9 @@ const PostFeed = () => {
             </div>
             <p style={{ margin: '8px 0', fontSize: '0.95rem', lineHeight: 1.5, color: 'var(--text-secondary)' }}>{post.content}</p>
             <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
-              <span style={{ fontSize: '0.75rem', color: '#86868b' }}>#{post.source}</span>
-              <span style={{ fontSize: '0.75rem', color: post.sentiment_label === 'positive' ? '#34c759' : post.sentiment_label === 'negative' ? '#fa4d56' : '#8d8d8d', fontWeight: 600 }}>
-                {post.sentiment_label.toUpperCase()}
+              <span style={{ fontSize: '0.75rem', color: '#86868b' }}>#{post.source || 'pulse'}</span>
+              <span style={{ fontSize: '0.75rem', color: (post.sentiment_label || post.sentiment) === 'positive' ? '#34c759' : (post.sentiment_label || post.sentiment) === 'negative' ? '#fa4d56' : '#8d8d8d', fontWeight: 600 }}>
+                {(post.sentiment_label || post.sentiment || 'neutral').toUpperCase()}
               </span>
             </div>
           </div>

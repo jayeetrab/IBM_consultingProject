@@ -21,9 +21,9 @@ const PostTile = ({ p, index }) => {
       className="post-tile-hover"
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <div className="post-platform">{p.source}</div>
-        <div style={{ fontSize: '0.75rem', fontWeight: 600, color: p.sentiment === 'positive' ? '#34c759' : p.sentiment === 'negative' ? '#ff3b30' : 'var(--text-tertiary)' }}>
-          {p.sentiment?.toUpperCase()}
+        <div className="post-platform">{p.source || 'pulse'}</div>
+        <div style={{ fontSize: '0.75rem', fontWeight: 600, color: (p.sentiment_label || p.sentiment) === 'positive' ? '#34c759' : (p.sentiment_label || p.sentiment) === 'negative' ? '#ff3b30' : 'var(--text-tertiary)' }}>
+          {(p.sentiment_label || p.sentiment || 'neutral')?.toUpperCase()}
         </div>
       </div>
       
@@ -56,7 +56,7 @@ const PostDetailsPanel = ({ isOpen, onClose, university, activeFilter }) => {
       setLoading(true);
       let url = `/api/posts/university/${encodeURIComponent(university)}?limit=25`;
       if (activeFilter && activeFilter !== 'Overall Map') {
-        url += `&category=${encodeURIComponent(activeFilter)}`;
+        url += `&engagement_type=${encodeURIComponent(activeFilter)}`;
       }
       api.get(url)
         .then(res => setPosts(res.data))
@@ -65,8 +65,8 @@ const PostDetailsPanel = ({ isOpen, onClose, university, activeFilter }) => {
     }
   }, [isOpen, university, activeFilter]);
 
-  const posCount = posts.filter(p => p.sentiment === 'positive').length;
-  const negCount = posts.filter(p => p.sentiment === 'negative').length;
+  const posCount = posts.filter(p => (p.sentiment_label || p.sentiment) === 'positive').length;
+  const negCount = posts.filter(p => (p.sentiment_label || p.sentiment) === 'negative').length;
   let sentimentScore = "Neutral";
   let sentimentColor = "var(--text-secondary)";
   if (posCount > negCount + 2) { sentimentScore = "Highly Positive"; sentimentColor = "#34c759"; }
@@ -74,7 +74,10 @@ const PostDetailsPanel = ({ isOpen, onClose, university, activeFilter }) => {
   else if (negCount > posCount) { sentimentScore = "Critical Attention"; sentimentColor = "var(--accent-red)"; }
 
   const catCounts = {};
-  posts.forEach(p => { catCounts[p.category] = (catCounts[p.category] || 0) + 1; });
+  posts.forEach(p => { 
+    const type = p.engagement_type || 'unknown';
+    catCounts[type] = (catCounts[type] || 0) + 1; 
+  });
   const topCat = Object.keys(catCounts).sort((a,b) => catCounts[b] - catCounts[a])[0] || 'Unknown';
 
   return (

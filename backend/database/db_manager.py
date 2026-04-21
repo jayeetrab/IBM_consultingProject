@@ -155,7 +155,6 @@ async def get_geo_engagements(region: Optional[str] = None, category: Optional[s
     if match_stage:
         pipeline.append({"$match": match_stage})
         
-    pipeline.append({
         "$group": {
             "_id": {
                 "university": "$university",
@@ -166,7 +165,21 @@ async def get_geo_engagements(region: Optional[str] = None, category: Optional[s
                 "engagement_type": "$engagement_type"
             },
             "post_count": {"$sum": "$post_count"},
-            "avg_sentiment": {"$first": "$sentiment"} # Simplification: take first for now
+            "positive_count": { "$sum": { "$cond": [{ "$eq": ["$sentiment", "positive"] }, 1, 0] } },
+            "negative_count": { "$sum": { "$cond": [{ "$eq": ["$sentiment", "negative"] }, 1, 0] } },
+            "total_records": { "$sum": 1 }
+        }
+    })
+    
+    pipeline.append({
+        "$addFields": {
+            "avg_sentiment": {
+                "$cond": [
+                    { "$gt": ["$positive_count", "$negative_count"] },
+                    "positive",
+                    { "$cond": [{ "$gt": ["$negative_count", "$positive_count"] }, "negative", "neutral"] }
+                ]
+            }
         }
     })
     
@@ -190,7 +203,10 @@ async def get_timeline_data(date_from=None, date_to=None, category=None,
                            engagement_type=None, is_mock=None) -> List[dict]:
     query = {}
     if category and category != "Overall Map":
-        query["category"] = category
+        if category in ["technical", "non_technical", "unknown"]:
+            query["engagement_type"] = category
+        else:
+            query["category"] = category
     if engagement_type:
         query["engagement_type"] = engagement_type
     if is_mock is not None:
@@ -203,7 +219,6 @@ async def get_timeline_data(date_from=None, date_to=None, category=None,
         if date_to:
             query["created_at"]["$lte"] = datetime.combine(date_to, datetime.max.time())
             
-    # We want to group by engagement_type for the React charts
     cursor = posts_collection.find(query, {"created_at": 1, "engagement_type": 1})
     from collections import defaultdict
     aggregation = defaultdict(int)
@@ -218,7 +233,7 @@ async def get_timeline_data(date_from=None, date_to=None, category=None,
     for (date_str, engage), count in aggregation.items():
         result.append({
             "date": date_str,
-            "category": engage, # Alias to 'category' for frontend compat
+            "category": engage, 
             "engagement_type": engage,
             "post_count": count
         })
@@ -246,7 +261,7 @@ async def get_top_universities(region=None, engagement_type=None, limit=10) -> L
                     "region": "$region",
                     "engagement_type": "$engagement_type"
                 },
-                "post_count": {"$sum": 1}
+                "post_count": {"$sum": "$post_count"}
             }
         },
         {"$sort": {"post_count": -1}},

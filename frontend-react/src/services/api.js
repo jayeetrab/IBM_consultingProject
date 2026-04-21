@@ -25,12 +25,17 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     const message = error.response?.data?.detail || error.response?.data?.message || error.message;
-    console.error(' [API Error] ', message);
+    const status = error.response?.status;
     
-    // We can also attach the cleaned message to the error object 
-    // so components can display it easily.
+    console.error(`[API Error ${status || 'Network'}]`, message);
+    
+    if (status === 404) {
+      console.warn("Target endpoint not found. Verify VITE_API_URL and backend routing.");
+    } else if (status === 403) {
+      console.warn("Access forbidden. This may be due to CORS or missing authentication headers.");
+    }
+
     error.readableMessage = message;
-    
     return Promise.reject(error);
   }
 );
