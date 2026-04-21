@@ -34,7 +34,7 @@ const InteractiveMap = ({ activeFilter, onMarkerClick }) => {
       try {
         let url = '/api/map/';
         if (activeFilter !== 'Overall Map') {
-          url += `?category=${encodeURIComponent(activeFilter)}`;
+          url += `?engagement_type=${encodeURIComponent(activeFilter)}`;
         }
         const res = await api.get(url);
         setGeoData(res.data);
@@ -48,9 +48,9 @@ const InteractiveMap = ({ activeFilter, onMarkerClick }) => {
 
   return (
     <div style={{ height: '100%', width: '100%', borderRadius: 'inherit', overflow: 'hidden' }}>
-      <MapContainer 
-        center={[53.0, -2.0]} 
-        zoom={6} 
+      <MapContainer
+        center={[53.0, -2.0]}
+        zoom={6}
         style={{ height: '100%', width: '100%' }}
         zoomControl={false}
       >
@@ -59,67 +59,80 @@ const InteractiveMap = ({ activeFilter, onMarkerClick }) => {
           url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> contributors &copy; <a href="https://carto.com/">CARTO</a>'
         />
-        
-        {geoData.map((pt, i) => (
-          pt.latitude && pt.longitude && (
-          <CircleMarker 
-            key={i}
-            center={[pt.latitude, pt.longitude]}
-            radius={Math.max(10, Math.min(pt.post_count / 10, 40))}
-            fillColor="#B80B0B"
-            color="white"
-            weight={2}
-            opacity={1}
-            fillOpacity={0.7}
-            eventHandlers={{
-              click: () => onMarkerClick(pt.university),
-            }}
-          >
-             <Popup
-              className="apple-popup"
-             >
-               <div style={{ fontFamily: 'Inter, sans-serif' }}>
-                 <strong style={{ fontSize: '1rem', color: '#1d1d1f' }}>{pt.university}</strong>
-                 <div style={{ fontSize: '0.9rem', color: '#86868b', marginTop: '4px' }}>
-                   Click marker to view posts
-                 </div>
-                 <div style={{ marginTop: '8px', padding: '4px 8px', borderRadius: '4px', background: 'rgba(184, 11, 11, 0.1)', color: '#B80B0B', fontWeight: 600, display: 'inline-block' }}>
-                   {pt.post_count} Engagements
-                 </div>
-                 <div style={{ marginTop: '12px' }}>
-                   <button 
-                     onClick={(e) => {
-                       e.stopPropagation();
-                       onMarkerClick(pt.university);
-                     }}
-                     style={{
-                       background: '#B80B0B',
-                       color: 'white',
-                       border: 'none',
-                       borderRadius: '6px',
-                       padding: '6px 12px',
-                       fontSize: '0.9rem',
-                       cursor: 'pointer',
-                       width: '100%',
-                       fontWeight: 500,
-                       transition: 'background 0.2s'
-                     }}
-                     onMouseOver={(e) => e.target.style.background = '#8A0808'}
-                     onMouseOut={(e) => e.target.style.background = '#B80B0B'}
-                   >
-                     View Activity
-                   </button>
-                 </div>
-               </div>
+
+        {geoData.map((pt, i) => {
+          const color = pt.engagement_type === 'technical' ? '#0f62fe' :
+            pt.engagement_type === 'non_technical' ? '#fa4d56' : '#8d8d8d';
+
+          return pt.latitude && pt.longitude && (
+            <CircleMarker
+              key={i}
+              center={[pt.latitude, pt.longitude]}
+              radius={Math.max(10, Math.min(pt.post_count / 10, 40))}
+              fillColor={pt.engagement_type === 'technical' ? '0f62fe' : pt.engagement_type === 'nontechnical' ? 'da1e28' : '8d8d8d'}
+              color="white"
+              weight={2}
+              opacity={1}
+              fillOpacity={0.7}
+              eventHandlers={{
+                click: () => onMarkerClick(pt.university),
+              }}
+            >
+              <Popup className="apple-popup">
+                <div style={{ fontFamily: 'Inter, sans-serif', minWidth: '180px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <strong style={{ fontSize: '1rem', color: '#1d1d1f' }}>{pt.university}</strong>
+                    <span style={{ fontSize: '0.65rem', fontWeight: 800, padding: '2px 6px', borderRadius: '4px', background: `${color}20`, color: color, textTransform: 'uppercase' }}>
+                      {pt.engagement_type || 'Unknown'}
+                    </span>
+                  </div>
+                  <div style={{ fontSize: '0.85rem', color: '#86868b', marginTop: '4px' }}>
+                    Region: {pt.region}
+                  </div>
+                  <div style={{ marginTop: '12px', padding: '8px', borderRadius: '8px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Volume:</span>
+                      <span style={{ fontSize: '0.9rem', fontWeight: 700, color: 'var(--text-primary)' }}>{pt.post_count} posts</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '4px' }}>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>Trend:</span>
+                      <span style={{ fontSize: '0.8rem', color: pt.avg_sentiment === 'positive' ? '#34c759' : '#fa4d56' }}>
+                        {pt.avg_sentiment.toUpperCase()}
+                      </span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onMarkerClick(pt.university);
+                    }}
+                    style={{
+                      marginTop: '12px',
+                      background: color,
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '10px',
+                      fontSize: '0.9rem',
+                      cursor: 'pointer',
+                      width: '100%',
+                      fontWeight: 600,
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    Drill into Posts
+                  </button>
+                </div>
               </Popup>
-           </CircleMarker>
-          )
-        ))}
+            </CircleMarker>
+          );
+        })}
         <MapBounds points={geoData} />
       </MapContainer>
 
       {/* Inject small global CSS tweak for map popup to look premium */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .leaflet-popup-content-wrapper {
           border-radius: 12px;
           box-shadow: 0 10px 30px rgba(0,0,0,0.1);

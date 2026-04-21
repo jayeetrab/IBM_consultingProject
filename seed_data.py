@@ -65,10 +65,19 @@ for i in range(NUM_POSTS):
     
     content += f" @{uni[0].replace(' ','')}"
     
+    # Use the live classifier for seeding consistency
+    from backend.nlp.classifier import process_text
+    nlp_stats = process_text(content)
+    
     posts.append({
         "id": f"EXT_{i}_{random.randint(1000,99999)}",
         "source": pltfw,
         "text": content,
+        "clean_text": content.lower(),
+        "universities": [uni[0]],
+        "engagement_type": nlp_stats["engagement_type"],
+        "is_mock": True,
+        "pipeline_version": "v2.0-seed",
         "clean_text": content.lower(),
         "universities": [uni[0]],
         "keywords": {
@@ -76,8 +85,8 @@ for i in range(NUM_POSTS):
             "technical": ["ibm", "model", "python"] if cat_name in ["AI", "Data Science"] else ["workshop", "society"]
         },
         "sentiment": {
-            "label": default_sent,
-            "compound": 0.8 if default_sent == 'positive' else 0.0
+            "label": nlp_stats["sentiment"]["label"],
+            "compound": nlp_stats["sentiment"]["score"]
         },
         "score": random.randint(10, 500),
         "created_at": datetime.utcnow() - timedelta(days=days_ago),

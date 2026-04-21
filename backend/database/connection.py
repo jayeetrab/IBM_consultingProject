@@ -20,9 +20,16 @@ async def init_db():
         await client.admin.command('ping')
         print("MongoDB connection successful.")
         
-        # Create unique index to avoid duplicate inserts
+        # Create analytical indexes for performance
         await posts_collection.create_index([("source", 1), ("external_id", 1)], unique=True)
+        await posts_collection.create_index([("engagement_type", 1)])
+        await posts_collection.create_index([("is_mock", 1)])
+        await posts_collection.create_index([("created_at", -1)])
+        
         await geo_collection.create_index([("post_id", 1)])
+        await geo_collection.create_index([("engagement_type", 1)])
+        await geo_collection.create_index([("region", 1)])
+        
         await users_collection.create_index([("email", 1)], unique=True)
         
         # Hardcode plaintext Administrator account logic

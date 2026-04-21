@@ -28,46 +28,52 @@ const BusinessAnalyticsGrid = () => {
       api.get('/api/analytics/sentiment-summary'),
       api.get('/api/analytics/insight-sections')
     ])
-    .then(([sentRes, structRes]) => {
-      // Map Sentiment for PieChart
-      const sRaw = sentRes.data;
-      const formattedPie = sRaw.map(s => ({
-        name: s.label.charAt(0).toUpperCase() + s.label.slice(1),
-        value: s.count,
-        color: s.label === 'positive' ? '#34c759' : s.label === 'negative' ? 'var(--accent-red)' : 'var(--text-tertiary)'
-      }));
-      setPieData(formattedPie);
+      .then(([sentRes, structRes]) => {
+        // Map Sentiment for PieChart
+        const sRaw = sentRes.data;
+        const formattedPie = sRaw.map(s => ({
+          name: s.label.charAt(0).toUpperCase() + s.label.slice(1),
+          value: s.count,
+          color: s.label === 'positive' ? '#34c759' : s.label === 'negative' ? 'var(--accent-red)' : 'var(--text-tertiary)'
+        }));
+        setPieData(formattedPie);
 
-      // Map Categories for BarChart
-      const techArr = structRes.data.tech_interest || [];
-      const formattedBar = techArr.map(t => ({
-        name: t.university,
-        engagements: t.count
-      }));
-      setBarData(formattedBar);
-    })
-    .catch(err => console.error(err))
-    .finally(() => setLoading(false));
+        // Map Categories for BarChart
+        const techArr = structRes.data.tech_interest || [];
+        const formattedBar = techArr.map(t => ({
+          name: t.university,
+          engagements: t.count
+        }));
+        setBarData(formattedBar);
+      })
+      .catch(err => console.error(err))
+      .finally(() => setLoading(false));
   }, []);
 
   return (
     <div style={{ padding: '0 2rem 4rem', maxWidth: '1400px', margin: '-1rem auto 0' }}>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '32px' }}>
-        
+
         {/* Sentiment Pie Chart */}
         <div className="card fade-in" style={{ padding: '32px', display: 'flex', flexDirection: 'column' }}>
           <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
             <PieChartIcon size={20} color="#f5a623" />
             Global Sentiment Ratio
           </h3>
-          
+
           {loading ? (
-             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading BI...</div>
+            <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '12px' }}>
+              <Activity size={32} className="spin" color="var(--accent-blue)" />
+              <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>Analyzing Sentiment...</span>
+            </div>
           ) : pieData.length === 0 ? (
-             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>No data available.</div>
+            <div style={{ flexGrow: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)', gap: '8px' }}>
+              <X size={24} />
+              <span>No sentiment data found for this filter.</span>
+            </div>
           ) : (
             <>
-              <div 
+              <div
                 style={{ width: '100%', height: '320px', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 onClick={() => navigate('/analytics/sentiment')}
                 title="Click for Deep Sentiment Analysis"
@@ -88,13 +94,13 @@ const BusinessAnalyticsGrid = () => {
                         <Cell key={`cell-${index}`} fill={entry.color} cornerRadius={6} />
                       ))}
                     </Pie>
-                    <Tooltip 
+                    <Tooltip
                       contentStyle={{ borderRadius: '16px', border: '1px solid var(--border-strong)', background: 'var(--bg-secondary)', fontWeight: 700, boxShadow: '0 8px 30px rgba(0,0,0,0.1)' }}
                     />
                     <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '0.85rem', fontWeight: 600 }} />
                   </PieChart>
                 </ResponsiveContainer>
-                
+
                 {/* Center Label for Donut - Refined Centering */}
                 {!loading && pieData.length > 0 && (
                   <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -100%)', textAlign: 'center', pointerEvents: 'none' }}>
@@ -106,9 +112,9 @@ const BusinessAnalyticsGrid = () => {
                 )}
               </div>
 
-              <button 
+              <button
                 onClick={() => navigate('/analytics/sentiment')}
-                style={{ 
+                style={{
                   marginTop: '1rem', width: '100%', padding: '0.75rem', borderRadius: '12px',
                   background: 'rgba(15, 98, 254, 0.05)', color: 'var(--accent-blue)',
                   border: 'none', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
@@ -127,14 +133,14 @@ const BusinessAnalyticsGrid = () => {
             <BarChart3 size={20} color="var(--accent-blue)" />
             Top Institutional Performers
           </h3>
-          
+
           {loading ? (
-             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading BI...</div>
+            <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading BI...</div>
           ) : barData.length === 0 ? (
-             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>No data available.</div>
+            <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>No data available.</div>
           ) : (
             <>
-              <div 
+              <div
                 style={{ width: '100%', height: '300px', cursor: 'pointer' }}
                 onClick={() => navigate('/analytics/categories')}
                 title="Click for Detailed Technical Mapping"
@@ -143,7 +149,7 @@ const BusinessAnalyticsGrid = () => {
                   <BarChart data={barData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
                     <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
                     <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                    <Tooltip 
+                    <Tooltip
                       cursor={{ fill: 'var(--bg-primary)' }}
                       contentStyle={{ borderRadius: '12px', border: '1px solid var(--border-strong)', background: 'var(--bg-secondary)', fontWeight: 600 }}
                     />
@@ -152,9 +158,9 @@ const BusinessAnalyticsGrid = () => {
                 </ResponsiveContainer>
               </div>
 
-              <button 
+              <button
                 onClick={() => navigate('/analytics/categories')}
-                style={{ 
+                style={{
                   marginTop: '1rem', width: '100%', padding: '0.75rem', borderRadius: '12px',
                   background: 'rgba(15, 98, 254, 0.05)', color: 'var(--accent-blue)',
                   border: 'none', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
@@ -180,25 +186,29 @@ const BusinessAnalyticsGrid = () => {
 function Dashboard() {
   // Interactive Filters
   const [activeFilter, setActiveFilter] = useState('Overall Map');
-  
+
   // Side Panel State
   const [panelOpen, setPanelOpen] = useState(false);
   const [selectedUni, setSelectedUni] = useState(null);
-  
+
   // Modal State
   // Stats State
-  const [globalStats, setGlobalStats] = useState({ 
-    total: '---', trajectory: '--', metrics: {} 
+  const [globalStats, setGlobalStats] = useState({
+    total: '---', trajectory: '--', metrics: {}
   });
 
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', content: null });
-  
-  // Real Website SaaS State
+
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const user = JSON.parse(localStorage.getItem('ibm_user') || '{"name": "Admin", "email": "admin"}');
+
+  // New States for Robustness
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [dataMode, setDataMode] = useState('demo'); // 'demo' or 'live'
+  const [explorationMode, setExplorationMode] = useState('reset');
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
@@ -206,7 +216,6 @@ function Dashboard() {
   }, [theme]);
 
   useEffect(() => {
-    // Click outside handler for dropdown
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
@@ -216,10 +225,41 @@ function Dashboard() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dropdownRef]);
 
-  // Fetch global stats on load
+  const handleSync = async () => {
+    setIsSyncing(true);
+    try {
+      await api.post('/api/ingest/reddit');
+      // Show success toast or modal
+      openModal('Sync Started', <p>Reddit ingestion has been triggered for priority universities. Results will appear in the dashboard shortly.</p>);
+      setDataMode('live');
+    } catch (err) {
+      console.error("Sync failed:", err);
+      openModal('Sync Failed', <p>Unable to trigger live ingestion. Please check your backend connection.</p>);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  const handleExplorationChange = (mode) => {
+    setExplorationMode(mode);
+    if (mode === 'tech-hubs') {
+      // Direct exploration to Technical engagements
+      setActiveFilter('Overall Map');
+      // We could ideally pass engagement_type=technical to the children here
+      // But for now, we'll let the user choose filters or assume the UI pivots
+    } else if (mode === 'recent-activity') {
+      setActiveFilter('Overall Map');
+    } else if (mode === 'reset') {
+      setActiveFilter('Overall Map');
+    }
+  };
+
   useEffect(() => {
     api.get('/api/analytics/global-stats')
-      .then(res => setGlobalStats(res.data))
+      .then(res => {
+        setGlobalStats(res.data);
+        if (res.data.total > 100) setDataMode('live');
+      })
       .catch(err => console.error("Error fetching stats:", err));
   }, []);
 
@@ -261,10 +301,10 @@ function Dashboard() {
             </div>
           </div>
         </div>
-        
+
         <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem', marginTop: '1.5rem' }}>
           <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Security Settings</div>
-          
+
           <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
             <div style={{ background: 'var(--bg-primary)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <span style={{ fontWeight: 500, fontSize: '0.95rem' }}>Change Password</span>
@@ -285,14 +325,14 @@ function Dashboard() {
     openModal('Platform Settings', (
       <div style={{ padding: '1rem 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
         <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '0.5rem' }}>Customize your analytical workspace and privacy rules.</p>
-        
+
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border-light)' }}>
           <div>
             <div style={{ fontWeight: 600 }}>Email Notifications</div>
             <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>Receive alerts for critical sentiment drops</div>
           </div>
           <div style={{ width: '44px', height: '24px', background: 'var(--accent-blue)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
-             <div style={{ position: 'absolute', top: '2px', right: '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%' }}></div>
+            <div style={{ position: 'absolute', top: '2px', right: '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%' }}></div>
           </div>
         </div>
 
@@ -302,7 +342,7 @@ function Dashboard() {
             <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>Sent at 08:00 AM UTC</div>
           </div>
           <div style={{ width: '44px', height: '24px', background: 'var(--border-strong)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
-             <div style={{ position: 'absolute', top: '2px', left: '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%' }}></div>
+            <div style={{ position: 'absolute', top: '2px', left: '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%' }}></div>
           </div>
         </div>
 
@@ -312,7 +352,7 @@ function Dashboard() {
             <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>Hide explicit names from analytical extracts</div>
           </div>
           <div style={{ width: '44px', height: '24px', background: 'var(--accent-blue)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
-             <div style={{ position: 'absolute', top: '2px', right: '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%' }}></div>
+            <div style={{ position: 'absolute', top: '2px', right: '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%' }}></div>
           </div>
         </div>
 
@@ -331,29 +371,85 @@ function Dashboard() {
 
   return (
     <div className="landing-wrapper">
-      
+
+      {/* 0. Guided Exploration & Sync controls */}
+      <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-end' }}>
+        <button
+          onClick={handleSync}
+          disabled={isSyncing}
+          className="nav-btn-primary"
+          style={{
+            boxShadow: '0 10px 30px rgba(15, 98, 254, 0.3)',
+            padding: '12px 24px', borderRadius: '100px',
+            display: 'flex', alignItems: 'center', gap: '10px',
+            opacity: isSyncing ? 0.7 : 1
+          }}
+        >
+          {isSyncing ? <Activity className="spin" size={18} /> : <Activity size={18} />}
+          {isSyncing ? 'Syncing...' : 'Sync Live Data'}
+        </button>
+
+        <div className="card" style={{ padding: '8px', borderRadius: '100px', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+          <div style={{ padding: '0 12px', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text-secondary)' }}>Explore:</div>
+          {[
+            { id: 'reset', label: 'Overview', icon: <Activity size={14} /> },
+            { id: 'tech-hubs', label: 'Tech Hubs', icon: <Sparkles size={14} /> },
+            { id: 'recent-activity', label: 'Recent', icon: <Activity size={14} /> }
+          ].map(opt => (
+            <button
+              key={opt.id}
+              onClick={() => handleExplorationChange(opt.id)}
+              style={{
+                padding: '6px 16px', borderRadius: '100px', border: 'none',
+                background: explorationMode === opt.id ? 'var(--accent-blue)' : 'transparent',
+                color: explorationMode === opt.id ? 'white' : 'var(--text-primary)',
+                fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer',
+                display: 'flex', alignItems: 'center', gap: '6px', transition: 'all 0.2s'
+              }}
+            >
+              {opt.icon} {opt.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* 1. Floating Pill Navigation */}
       <nav className="pill-nav fade-in">
         <div className="brand-logos">
           <img src={ibmLogo} alt="IBM" style={{ height: '32px', width: 'auto' }} />
           <div style={{ width: '1px', height: '20px', background: 'var(--border-strong)' }}></div>
           <img src={bristolLogo} alt="University of Bristol" style={{ height: '32px', width: 'auto' }} />
+
+          {/* Data Mode Badge */}
+          <div style={{
+            marginLeft: '1rem', padding: '4px 10px', borderRadius: '100px',
+            background: dataMode === 'live' ? 'rgba(52, 199, 89, 0.1)' : 'rgba(245, 166, 35, 0.1)',
+            color: dataMode === 'live' ? '#34c759' : '#f5a623',
+            fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em',
+            display: 'flex', alignItems: 'center', gap: '6px', border: '1px solid currentColor'
+          }}>
+            <div style={{
+              width: '6px', height: '6px', borderRadius: '50%',
+              background: 'currentColor', boxShadow: '0 0 10px currentColor'
+            }} className={dataMode === 'live' ? 'pulse' : ''}></div>
+            {dataMode} data
+          </div>
         </div>
-        
+
         <div className="nav-links">
           <button className="nav-btn" onClick={() => openModal('Documentation', <p>Full API documentation is available at <code>/docs</code> on the backend. Fast, fully typed asynchronous endpoints powered by FastAPI and MongoDB.</p>)}>Documentation</button>
-          
+
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.03)', padding: '4px 8px', borderRadius: '8px' }}>
             <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Export:</span>
             <a href="/api/export/csv" className="nav-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px' }}>
               <Download size={14} /> CSV
             </a>
           </div>
-          
+
           {/* User Profile Dropdown */}
           <div style={{ position: 'relative' }} ref={dropdownRef}>
-            <button 
-              className="nav-btn" 
+            <button
+              className="nav-btn"
               onClick={() => setDropdownOpen(!dropdownOpen)}
               style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-secondary)', padding: '6px 12px', borderRadius: '100px', border: '1px solid var(--border-strong)', color: 'var(--text-primary)' }}
             >
@@ -366,14 +462,14 @@ function Dashboard() {
 
             <AnimatePresence>
               {dropdownOpen && (
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  style={{ 
-                    position: 'absolute', top: 'calc(100% + 8px)', right: 0, 
-                    background: 'var(--bg-secondary)', border: '1px solid var(--border-strong)', 
-                    borderRadius: '16px', minWidth: '220px', padding: '8px', 
+                  style={{
+                    position: 'absolute', top: 'calc(100% + 8px)', right: 0,
+                    background: 'var(--bg-secondary)', border: '1px solid var(--border-strong)',
+                    borderRadius: '16px', minWidth: '220px', padding: '8px',
                     boxShadow: '0 10px 40px rgba(0,0,0,0.1)', zIndex: 3000
                   }}
                 >
@@ -389,18 +485,18 @@ function Dashboard() {
                     <Settings size={16} /> Settings
                   </button>
                   <button className="dropdown-item" onClick={toggleTheme}>
-                    {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />} 
+                    {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
                     {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
                   </button>
-                  
+
                   {user.email === 'admin' && (
                     <button className="dropdown-item" onClick={() => { setDropdownOpen(false); openModal('System Audit Trail', <AuditLogViewer />); }} style={{ color: '#f5a623' }}>
                       <ShieldAlert size={16} /> Audit Logs
                     </button>
                   )}
-                  
+
                   <div style={{ height: '1px', background: 'var(--border-light)', margin: '4px 0' }}></div>
-                  
+
                   <button className="dropdown-item" onClick={handleLogout} style={{ color: 'var(--accent-red)' }}>
                     <LogOut size={16} /> Logout
                   </button>
@@ -408,12 +504,13 @@ function Dashboard() {
               )}
             </AnimatePresence>
           </div>
-          
+
         </div>
       </nav>
 
       {/* Basic Dropdown Item CSS */}
-      <style dangerouslySetInnerHTML={{__html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         .dropdown-item {
           display: flex; align-items: center; gap: 10px; width: 100%; border: none; 
           background: none; padding: 10px 12px; border-radius: 8px; text-align: left; 
@@ -432,7 +529,7 @@ function Dashboard() {
           Intelligence for the <span>Next Generation</span> of Engineers.
         </h1>
         <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
-          Track, analyze, and engage with technical sentiment across universities in the UK & Ireland using cutting-edge HuggingFace models.
+          Track, analyze, and engage with IBM-related activity across UK & Ireland universities using transparent keyword classification and real-time sentiment analysis.
         </p>
 
         {/* 3. Glowing Advanced Search Box */}
@@ -441,7 +538,7 @@ function Dashboard() {
 
       {/* 4. Dashboard Core */}
       <main className="dashboard-grid fade-in">
-        
+
         {/* Left Column: Stats & Timeline */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
           <div className="card">
@@ -452,7 +549,7 @@ function Dashboard() {
             <div style={{ color: '#34c759', fontWeight: 600, fontSize: '0.9rem', marginTop: '0.25rem' }}>
               {globalStats.trajectory} trajectory
             </div>
-            
+
             <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
               {Object.entries(globalStats.metrics).map(([key, val]) => (
                 <div key={key} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
@@ -462,18 +559,18 @@ function Dashboard() {
               ))}
             </div>
 
-            <button 
+            <button
               onClick={() => navigate('/analytics/benchmark')}
-              className="nav-btn-primary" 
+              className="nav-btn-primary"
               style={{ marginTop: '1.5rem', width: '100%', fontSize: '0.85rem' }}
             >
               Benchmark Institutions
             </button>
           </div>
-          
+
           <div className="card" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-               <Activity size={18} color="var(--accent-blue)" /> Velocity Timeline
+              <Activity size={18} color="var(--accent-blue)" /> Velocity Timeline
             </h3>
             <div style={{ flexGrow: 1, minHeight: '250px' }}>
               <TimelineChart filter={activeFilter} />
@@ -483,19 +580,19 @@ function Dashboard() {
 
         {/* Right Column: Interactive Map */}
         <div className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
-          
+
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
             <h3 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
               <MapPin size={18} color="var(--accent-red)" /> Engagement Topology
             </h3>
-            
+
             <div className="filters-row" style={{ marginBottom: 0, flexWrap: 'wrap', gap: '8px' }}>
               {[
-                'Overall Map', 'AI', 'Data Science', 'Design Thinking', 
-                'AI and Law', 'IBM SkillsBuild', 'Hackathons', 
+                'Overall Map', 'AI', 'Data Science', 'Design Thinking',
+                'AI and Law', 'IBM SkillsBuild', 'Hackathons',
                 'Open Source', 'Student Societies'
               ].map(flt => (
-                <button 
+                <button
                   key={flt}
                   className={`filter-chip ${activeFilter === flt ? 'active' : ''}`}
                   onClick={() => setActiveFilter(flt)}
@@ -513,24 +610,24 @@ function Dashboard() {
         </div>
 
       </main>
-      
+
       {/* 5. New Expanded Insights Section (Business Analytics Upgrade) */}
       <BusinessAnalyticsGrid />
 
       {/* Detail Slide Panel */}
-      <PostDetailsPanel 
-        isOpen={panelOpen} 
-        onClose={() => setPanelOpen(false)} 
-        university={selectedUni} 
+      <PostDetailsPanel
+        isOpen={panelOpen}
+        onClose={() => setPanelOpen(false)}
+        university={selectedUni}
         activeFilter={activeFilter}
       />
 
       {/* Nav Modal */}
-      <NavModal 
-        isOpen={modalOpen} 
-        onClose={() => setModalOpen(false)} 
-        title={modalContent.title} 
-        content={modalContent.content} 
+      <NavModal
+        isOpen={modalOpen}
+        onClose={() => setModalOpen(false)}
+        title={modalContent.title}
+        content={modalContent.content}
       />
 
     </div>

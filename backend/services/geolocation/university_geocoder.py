@@ -1,17 +1,12 @@
-import json
-import os
+from typing import Optional, List, Dict, Any
 
-_geo_path = os.path.join(os.path.dirname(__file__), "uk_ireland_universities.json")
-
-with open(_geo_path, "r") as f:
-    UNI_GEO: dict = json.load(f)
-
-UNI_LOOKUP = {name.lower(): name for name in UNI_GEO.keys()}
-
-def get_coordinates(university_name: str) -> dict | None:
+def get_coordinates(university_name: str) -> Optional[Dict]:
     return UNI_GEO.get(university_name)
 
-def enrich_posts_with_geo(posts: list[dict]) -> list[dict]:
+async def get_sentiment_evolution(category: Optional[str] = None) -> List[Dict]:
+    pass
+
+def enrich_posts_with_geo(posts: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     for post in posts:
         geo_data = {}
         for uni in post.get("universities", []):
