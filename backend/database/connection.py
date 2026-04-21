@@ -20,7 +20,6 @@ async def init_db():
         await client.admin.command('ping')
         print("MongoDB connection successful.")
         
-<<<<<<< HEAD
         # v2.0 Analytical Index Suite - 7+ Compound / Targeted Keys
         # 1. Deduplication Unique Index
         await posts_collection.create_index([("source", 1), ("external_id", 1)], unique=True)
@@ -38,14 +37,14 @@ async def init_db():
         await geo_collection.create_index([("university", 1), ("engagement_type", 1)])
         
         # 6. Post-Geo Relationship Index (Enforce Uniqueness)
+        # Drop previous if exists to change specs
+        try:
+            await geo_collection.drop_index("post_id_1_university_1")
+        except:
+            pass
         await geo_collection.create_index([("post_id", 1), ("university", 1)], unique=True, sparse=True)
         
         # 7. Authentication Unique Index
-=======
-        # Create unique index to avoid duplicate inserts
-        await posts_collection.create_index([("source", 1), ("external_id", 1)], unique=True)
-        await geo_collection.create_index([("post_id", 1)])
->>>>>>> parent of 3f7135a (huuge)
         await users_collection.create_index([("email", 1)], unique=True)
         
         # Provision Administrator account
@@ -64,7 +63,7 @@ async def init_db():
             await audit_logs_collection.insert_one({
                 "action": "system_init",
                 "user": "System",
-                "details": "Provisioned secure admin account with v2.0 hashing",
+                "details": "Provisioned secure admin account with v2.0 index suite",
                 "timestamp": datetime.utcnow()
             })
             
@@ -73,3 +72,6 @@ async def init_db():
         print(f"CRITICAL: Database connection failed: {e}")
         # We don't raise here to allow the app to start and show a health check error
         # rather than hanging Render's deployment indefinitely.
+
+def get_db():
+    return db

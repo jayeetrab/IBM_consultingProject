@@ -24,7 +24,6 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-<<<<<<< HEAD
     const message = error.response?.data?.detail || error.response?.data?.message || error.message;
     const status = error.response?.status;
     
@@ -32,14 +31,12 @@ api.interceptors.response.use(
     
     if (status === 404) {
       console.warn("Target endpoint not found. Verify VITE_API_URL and backend routing.");
-    } else if (status === 403) {
-      console.warn("Access forbidden. This may be due to CORS or missing authentication headers.");
+    } else if (status === 401 || status === 403) {
+      console.warn("Authentication error. Redirecting to login session.");
+      // Soft handle - actual logout happens in Dashboard.jsx if needed
     }
 
     error.readableMessage = message;
-=======
-    console.error('API Error:', error.response?.data || error.message);
->>>>>>> parent of 3f7135a (huuge)
     return Promise.reject(error);
   }
 );

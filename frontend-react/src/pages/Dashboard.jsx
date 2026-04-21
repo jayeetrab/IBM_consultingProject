@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, MapPin, Activity, Download, Settings, X, ExternalLink, Upload, ShieldAlert, User, Moon, Sun, LogOut, ChevronDown, PieChart as PieChartIcon, BarChart3, TrendingUp } from 'lucide-react';
+import { Sparkles, MapPin, Activity, Download, Settings, X, ExternalLink, Upload, ShieldAlert, User, Moon, Sun, LogOut, ChevronDown, PieChart as PieChartIcon, BarChart3, TrendingUp, Search } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import api from '../services/api';
 import InteractiveMap from '../components/InteractiveMap';
@@ -14,7 +14,6 @@ import NavModal from '../components/NavModal';
 import '../index.css';
 import ibmLogo from '../assets/ibm-logo.png';
 import bristolLogo from '../assets/bristol-logo.png';
-
 
 const SkeletonCard = () => (
   <div className="card" style={{ padding: '32px', height: '400px', display: 'flex', flexDirection: 'column', gap: '20px' }}>
@@ -51,12 +50,11 @@ const BusinessAnalyticsGrid = () => {
       api.get('/api/analytics/keywords'),
       api.get('/api/analytics/category-intersection')
     ])
-<<<<<<< HEAD
       .then(([sentRes, structRes, sourceRes, keyRes, catRes]) => {
         setPieData(sentRes.data.map(s => ({
           name: s.label.toUpperCase(),
           value: s.count,
-          color: s.label === 'positive' ? '#34c759' : s.label === 'negative' ? '#fa4d56' : '#8d8d8d'
+          color: s.label === 'positive' ? '#34c759' : s.label === 'negative' ? 'var(--accent-red)' : 'var(--text-tertiary)'
         })));
         setBarData((structRes.data.tech_interest || []).map(t => ({ name: t.university, engagements: t.count })));
         setSourceData(sourceRes.data.map(s => ({ name: s.source.toUpperCase(), value: s.count })));
@@ -65,28 +63,6 @@ const BusinessAnalyticsGrid = () => {
       })
       .catch(err => console.error(err))
       .finally(() => setLoading(false));
-=======
-    .then(([sentRes, structRes]) => {
-      // Map Sentiment for PieChart
-      const sRaw = sentRes.data;
-      const formattedPie = sRaw.map(s => ({
-        name: s.label.charAt(0).toUpperCase() + s.label.slice(1),
-        value: s.count,
-        color: s.label === 'positive' ? '#34c759' : s.label === 'negative' ? 'var(--accent-red)' : 'var(--text-tertiary)'
-      }));
-      setPieData(formattedPie);
-
-      // Map Categories for BarChart
-      const techArr = structRes.data.tech_interest || [];
-      const formattedBar = techArr.map(t => ({
-        name: t.university,
-        engagements: t.count
-      }));
-      setBarData(formattedBar);
-    })
-    .catch(err => console.error(err))
-    .finally(() => setLoading(false));
->>>>>>> parent of 3f7135a (huuge)
   }, []);
 
   if (loading) {
@@ -101,7 +77,6 @@ const BusinessAnalyticsGrid = () => {
 
   return (
     <div style={{ padding: '0 2rem 4rem', maxWidth: '1400px', margin: '-1rem auto 0' }}>
-<<<<<<< HEAD
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(600px, 1fr))', gap: '32px' }}>
 
         {/* 1. Sentiment Matrix (Clickable Drill-down) */}
@@ -134,75 +109,6 @@ const BusinessAnalyticsGrid = () => {
           <p style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', marginTop: '1.5rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
             Click for Longitudinal Evolution →
           </p>
-=======
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1.5fr', gap: '32px' }}>
-        
-        {/* Sentiment Pie Chart */}
-        <div className="card fade-in" style={{ padding: '32px', display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <PieChartIcon size={20} color="#f5a623" />
-            Global Sentiment Ratio
-          </h3>
-          
-          {loading ? (
-             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading BI...</div>
-          ) : pieData.length === 0 ? (
-             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>No data available.</div>
-          ) : (
-            <>
-              <div 
-                style={{ width: '100%', height: '320px', cursor: 'pointer', position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                onClick={() => navigate('/analytics/sentiment')}
-                title="Click for Deep Sentiment Analysis"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={pieData}
-                      cx="50%"
-                      cy="45%"
-                      innerRadius={75}
-                      outerRadius={110}
-                      paddingAngle={6}
-                      dataKey="value"
-                      stroke="none"
-                    >
-                      {pieData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.color} cornerRadius={6} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ borderRadius: '16px', border: '1px solid var(--border-strong)', background: 'var(--bg-secondary)', fontWeight: 700, boxShadow: '0 8px 30px rgba(0,0,0,0.1)' }}
-                    />
-                    <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ paddingTop: '20px', fontSize: '0.85rem', fontWeight: 600 }} />
-                  </PieChart>
-                </ResponsiveContainer>
-                
-                {/* Center Label for Donut - Refined Centering */}
-                {!loading && pieData.length > 0 && (
-                  <div style={{ position: 'absolute', top: '45%', left: '50%', transform: 'translate(-50%, -100%)', textAlign: 'center', pointerEvents: 'none' }}>
-                    <div style={{ fontSize: '0.7rem', color: 'var(--text-tertiary)', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Matrix Volume</div>
-                    <div style={{ fontSize: '1.75rem', fontWeight: 900, color: 'var(--text-primary)', lineHeight: 1 }}>
-                      {pieData.reduce((acc, d) => acc + d.value, 0)}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <button 
-                onClick={() => navigate('/analytics/sentiment')}
-                style={{ 
-                  marginTop: '1rem', width: '100%', padding: '0.75rem', borderRadius: '12px',
-                  background: 'rgba(15, 98, 254, 0.05)', color: 'var(--accent-blue)',
-                  border: 'none', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
-                  transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-                }}
-              >
-                View Sentiment Evolution <ExternalLink size={14} />
-              </button>
-            </>
-          )}
->>>>>>> parent of 3f7135a (huuge)
         </div>
 
         {/* 2. Institutional Performance Matrix (Clickable Drill-down) */}
@@ -241,7 +147,6 @@ const BusinessAnalyticsGrid = () => {
           <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
              <Activity size={20} color="#8a3ffc" /> Strategic Competency Matrix
           </h3>
-<<<<<<< HEAD
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
             {keywordData.length > 0 ? keywordData.slice(0, 8).map((kw, i) => (
               <div key={i} style={{ padding: '20px', borderRadius: '12px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -256,46 +161,6 @@ const BusinessAnalyticsGrid = () => {
           <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginTop: '2rem', borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem' }}>
             <strong>Intelligence Summary:</strong> These technical clusters represent the highest engagement density across the campus ecosystem.
           </p>
-=======
-          
-          {loading ? (
-             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>Loading BI...</div>
-          ) : barData.length === 0 ? (
-             <div style={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-tertiary)' }}>No data available.</div>
-          ) : (
-            <>
-              <div 
-                style={{ width: '100%', height: '300px', cursor: 'pointer' }}
-                onClick={() => navigate('/analytics/categories')}
-                title="Click for Detailed Technical Mapping"
-              >
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={barData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                    <Tooltip 
-                      cursor={{ fill: 'var(--bg-primary)' }}
-                      contentStyle={{ borderRadius: '12px', border: '1px solid var(--border-strong)', background: 'var(--bg-secondary)', fontWeight: 600 }}
-                    />
-                    <Bar dataKey="engagements" fill="var(--accent-blue)" radius={[6, 6, 0, 0]} maxBarSize={60} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-
-              <button 
-                onClick={() => navigate('/analytics/categories')}
-                style={{ 
-                  marginTop: '1rem', width: '100%', padding: '0.75rem', borderRadius: '12px',
-                  background: 'rgba(15, 98, 254, 0.05)', color: 'var(--accent-blue)',
-                  border: 'none', fontWeight: 700, fontSize: '0.8rem', cursor: 'pointer',
-                  transition: 'all 0.2s ease', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px'
-                }}
-              >
-                View Academic Mapping <ExternalLink size={14} />
-              </button>
-            </>
-          )}
->>>>>>> parent of 3f7135a (huuge)
         </div>
 
       </div>
@@ -347,10 +212,9 @@ const BenchmarkView = () => {
                 <span style={{ color: 'var(--text-secondary)' }}>Metric Performance</span>
                 <span style={{ fontWeight: 800 }}>Level</span>
               </div>
-              {/* This would ideally map over categories, but since we're in executive view, we'll show totals */}
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Inbound Intelligence</span>
-                <span style={{ fontWeight: 800 }}>{Object.values(data[uni === uni1 ? 'uni1' : 'uni2']?.metrics || {}).reduce((acc, m) => acc + m.count, 0) || randomInt(10, 50)} items</span>
+                <span style={{ fontWeight: 800 }}>{Object.values(data[uni === uni1 ? 'uni1' : 'uni2']?.metrics || {}).reduce((acc, m) => acc + m.count, 0) || 0} items</span>
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                 <span>Reputational Sentiment</span>
@@ -363,8 +227,6 @@ const BenchmarkView = () => {
     </div>
   );
 };
-
-const randomInt = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
 
 const PostFeed = () => {
   const [posts, setPosts] = useState([]);
@@ -397,7 +259,7 @@ const PostFeed = () => {
               </div>
               <span style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)' }}>{new Date(post.created_at).toLocaleDateString()}</span>
             </div>
-            <p style={{ margin: '8px 0', fontSize: '0.95rem', lineHeight: 1.5, color: 'var(--text-secondary)' }}>{post.content}</p>
+            <p style={{ margin: '8px 0', fontSize: '0.95rem', lineHeight: 1.5, color: 'var(--text-secondary)' }}>{post.text}</p>
             <div style={{ display: 'flex', gap: '12px', marginTop: '12px' }}>
               <span style={{ fontSize: '0.75rem', color: '#86868b' }}>#{post.source || 'pulse'}</span>
               <span style={{ fontSize: '0.75rem', color: (post.sentiment_label || post.sentiment) === 'positive' ? '#34c759' : (post.sentiment_label || post.sentiment) === 'negative' ? '#fa4d56' : '#8d8d8d', fontWeight: 600 }}>
@@ -468,48 +330,27 @@ const InsightsView = () => {
   );
 };
 
-
-// The Modal Component for Navigation Links
-
 function Dashboard() {
-  // Interactive Filters
+  const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState('Overall Map');
-  
-  // Side Panel State
   const [panelOpen, setPanelOpen] = useState(false);
   const [selectedUni, setSelectedUni] = useState(null);
-  
-  // Modal State
-  // Stats State
-  const [globalStats, setGlobalStats] = useState({ 
-    total: '---', trajectory: '--', metrics: {} 
-  });
-
+  const [globalStats, setGlobalStats] = useState({ total: 0, trajectory: '+0%', metrics: {} });
   const [modalOpen, setModalOpen] = useState(false);
   const [modalContent, setModalContent] = useState({ title: '', content: null });
-  
-  // Real Website SaaS State
   const [theme, setTheme] = useState(localStorage.getItem('theme') || 'light');
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const user = JSON.parse(localStorage.getItem('ibm_user') || '{"name": "Admin", "email": "admin"}');
-
-<<<<<<< HEAD
-  // Navigation Tabs
-  const [activeTab, setActiveTab] = useState('dashboard'); // dashboard, analytics, posts, insights
+  const [activeTab, setActiveTab] = useState('dashboard');
   const [isSyncing, setIsSyncing] = useState(false);
-  const [dataMode, setDataMode] = useState('demo'); // 'demo' or 'live'
-  const [explorationMode, setExplorationMode] = useState('reset');
 
-=======
->>>>>>> parent of 3f7135a (huuge)
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('theme', theme);
   }, [theme]);
 
   useEffect(() => {
-    // Click outside handler for dropdown
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setDropdownOpen(false);
@@ -519,14 +360,17 @@ function Dashboard() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [dropdownRef]);
 
-<<<<<<< HEAD
+  useEffect(() => {
+    api.get('/api/analytics/global-stats')
+      .then(res => setGlobalStats(res.data))
+      .catch(err => console.error("Error fetching stats:", err));
+  }, []);
+
   const handleSync = async () => {
     setIsSyncing(true);
     try {
       await api.post('/api/ingest/reddit');
-      // Show success toast or modal
       openModal('Sync Started', <p>Reddit ingestion has been triggered for priority universities. Results will appear in the dashboard shortly.</p>);
-      setDataMode('live');
     } catch (err) {
       console.error("Sync failed:", err);
       openModal('Sync Failed', <p>Unable to trigger live ingestion. Please check your backend connection.</p>);
@@ -535,31 +379,10 @@ function Dashboard() {
     }
   };
 
-  const handleExplorationChange = (mode) => {
-    setExplorationMode(mode);
-    if (mode === 'tech-hubs') {
-      setActiveFilter('technical');
-    } else if (mode === 'recent-activity') {
-      setActiveFilter('Overall Map');
-    } else if (mode === 'reset') {
-      setActiveFilter('Overall Map');
-    }
-  };
-
-=======
-  // Fetch global stats on load
->>>>>>> parent of 3f7135a (huuge)
-  useEffect(() => {
-    api.get('/api/analytics/global-stats')
-      .then(res => setGlobalStats(res.data))
-      .catch(err => console.error("Error fetching stats:", err));
-  }, []);
-
   const openModal = (title, content) => {
     setModalContent({ title, content });
     setModalOpen(true);
   };
-
 
   const handleMarkerClick = (uniName) => {
     setSelectedUni(uniName);
@@ -587,25 +410,6 @@ function Dashboard() {
           <div>
             <div style={{ fontSize: '1.5rem', fontWeight: 800 }}>{user.name}</div>
             <div style={{ color: 'var(--text-secondary)', fontSize: '0.95rem' }}>{user.email}</div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', background: 'rgba(52, 199, 89, 0.1)', color: '#34c759', padding: '4px 8px', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 700, marginTop: '8px', textTransform: 'uppercase' }}>
-              <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#34c759' }}></div>
-              Active Tier
-            </div>
-          </div>
-        </div>
-        
-        <div style={{ borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem', marginTop: '1.5rem' }}>
-          <div style={{ fontSize: '0.85rem', fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '1rem' }}>Security Settings</div>
-          
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <div style={{ background: 'var(--bg-primary)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 500, fontSize: '0.95rem' }}>Change Password</span>
-              <button className="nav-btn" style={{ color: 'var(--accent-blue)' }}>Edit</button>
-            </div>
-            <div style={{ background: 'var(--bg-primary)', padding: '12px 16px', borderRadius: '8px', border: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontWeight: 500, fontSize: '0.95rem' }}>Two-Factor Authentication</span>
-              <button className="nav-btn" style={{ color: 'var(--text-tertiary)' }}>Disabled</button>
-            </div>
           </div>
         </div>
       </div>
@@ -616,46 +420,8 @@ function Dashboard() {
   const openSettings = () => {
     openModal('Platform Settings', (
       <div style={{ padding: '1rem 0', display: 'flex', flexDirection: 'column', gap: '20px' }}>
-        <p style={{ color: 'var(--text-secondary)', fontSize: '0.95rem', marginBottom: '0.5rem' }}>Customize your analytical workspace and privacy rules.</p>
-        
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border-light)' }}>
-          <div>
-            <div style={{ fontWeight: 600 }}>Email Notifications</div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>Receive alerts for critical sentiment drops</div>
-          </div>
-          <div style={{ width: '44px', height: '24px', background: 'var(--accent-blue)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
-             <div style={{ position: 'absolute', top: '2px', right: '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%' }}></div>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border-light)' }}>
-          <div>
-            <div style={{ fontWeight: 600 }}>Daily Digest Reports</div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>Sent at 08:00 AM UTC</div>
-          </div>
-          <div style={{ width: '44px', height: '24px', background: 'var(--border-strong)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
-             <div style={{ position: 'absolute', top: '2px', left: '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%' }}></div>
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 0', borderBottom: '1px solid var(--border-light)' }}>
-          <div>
-            <div style={{ fontWeight: 600 }}>Data Anonymization</div>
-            <div style={{ fontSize: '0.85rem', color: 'var(--text-tertiary)' }}>Hide explicit names from analytical extracts</div>
-          </div>
-          <div style={{ width: '44px', height: '24px', background: 'var(--accent-blue)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
-             <div style={{ position: 'absolute', top: '2px', right: '2px', width: '20px', height: '20px', background: 'white', borderRadius: '50%' }}></div>
-          </div>
-        </div>
-
-        <div style={{ marginTop: '1rem', borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem' }}>
-          <h4 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '1rem', color: 'var(--text-primary)' }}>Administrative Actions</h4>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-            <DatasetUpload onClose={() => setModalOpen(false)} />
-          </div>
-        </div>
-
-        <button className="nav-btn-primary" onClick={() => setModalOpen(false)} style={{ marginTop: '1.5rem' }}>Save & Apply</button>
+        <DatasetUpload onClose={() => setModalOpen(false)} />
+        <button className="nav-btn-primary" onClick={() => setModalOpen(false)} style={{ marginTop: '1.5rem' }}>Close</button>
       </div>
     ));
     setDropdownOpen(false);
@@ -664,62 +430,44 @@ function Dashboard() {
   return (
     <div className="landing-wrapper">
       
-      {/* 1. Floating Pill Navigation */}
+      {/* Guided Exploration & Sync controls */}
+      <div style={{ position: 'fixed', bottom: '32px', right: '32px', zIndex: 1000, display: 'flex', flexDirection: 'column', gap: '12px', alignItems: 'flex-end' }}>
+        <button
+          onClick={handleSync}
+          disabled={isSyncing}
+          className="nav-btn-primary"
+          style={{
+            boxShadow: '0 10px 30px rgba(15, 98, 254, 0.3)',
+            padding: '12px 24px', borderRadius: '100px',
+            display: 'flex', alignItems: 'center', gap: '10px',
+            opacity: isSyncing ? 0.7 : 1
+          }}
+        >
+          {isSyncing ? <Activity className="spin" size={18} /> : <Activity size={18} />}
+          {isSyncing ? 'Syncing...' : 'Sync Live Data'}
+        </button>
+      </div>
+
       <nav className="pill-nav fade-in">
         <div className="brand-logos">
           <img src={ibmLogo} alt="IBM" style={{ height: '32px', width: 'auto' }} />
           <div style={{ width: '1px', height: '20px', background: 'var(--border-strong)' }}></div>
-          <img src={bristolLogo} alt="University of Bristol" style={{ height: '32px', width: 'auto' }} />
-<<<<<<< HEAD
-          
-          <div style={{ marginLeft: '1rem', color: 'var(--text-tertiary)', fontSize: '0.8rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: '#34c759' }}></div>
-            Operational Status: Healthy
-          </div>
-=======
->>>>>>> parent of 3f7135a (huuge)
+          <img src={bristolLogo} alt="Bristol" style={{ height: '32px', width: 'auto' }} />
         </div>
         
         <div className="nav-links">
-<<<<<<< HEAD
-          <button 
-            className={`nav-btn ${activeTab === 'dashboard' ? 'active-tab' : ''}`} 
-            onClick={() => setActiveTab('dashboard')}
-          >
-            Dashboard
-          </button>
-          <button 
-            className={`nav-btn ${activeTab === 'analytics' ? 'active-tab' : ''}`} 
-            onClick={() => setActiveTab('analytics')}
-          >
-            Analytics
-          </button>
-          <button 
-            className={`nav-btn ${activeTab === 'posts' ? 'active-tab' : ''}`} 
-            onClick={() => setActiveTab('posts')}
-          >
-            Posts
-          </button>
-          <button 
-            className={`nav-btn ${activeTab === 'insights' ? 'active-tab' : ''}`} 
-            onClick={() => setActiveTab('insights')}
-          >
-            Insights
-          </button>
-
+          {['dashboard', 'analytics', 'posts', 'insights'].map(tab => (
+            <button 
+              key={tab}
+              className={`nav-btn ${activeTab === tab ? 'active-tab' : ''}`} 
+              onClick={() => setActiveTab(tab)}
+            >
+              {tab.charAt(0).toUpperCase() + tab.slice(1)}
+            </button>
+          ))}
+          
           <div style={{ width: '1px', height: '24px', background: 'var(--border-strong)', margin: '0 8px' }}></div>
-=======
-          <button className="nav-btn" onClick={() => openModal('Documentation', <p>Full API documentation is available at <code>/docs</code> on the backend. Fast, fully typed asynchronous endpoints powered by FastAPI and MongoDB.</p>)}>Documentation</button>
->>>>>>> parent of 3f7135a (huuge)
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'rgba(0,0,0,0.03)', padding: '4px 8px', borderRadius: '8px' }}>
-            <span style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)' }}>Export:</span>
-            <a href="/api/export/xlsx" className="nav-btn" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '4px', padding: '4px 8px' }}>
-              <Download size={14} /> XLSX
-            </a>
-          </div>
-          
-          {/* User Profile Dropdown */}
           <div style={{ position: 'relative' }} ref={dropdownRef}>
             <button 
               className="nav-btn" 
@@ -729,7 +477,6 @@ function Dashboard() {
               <div style={{ width: '24px', height: '24px', borderRadius: '50%', background: 'var(--accent-blue)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'white', fontSize: '0.8rem', fontWeight: 700 }}>
                 {user.name.charAt(0).toUpperCase()}
               </div>
-              <span style={{ fontWeight: 600, fontSize: '0.9rem' }}>{user.name.split(' ')[0]}</span>
               <ChevronDown size={14} style={{ color: 'var(--text-tertiary)', transform: dropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }} />
             </button>
 
@@ -739,314 +486,95 @@ function Dashboard() {
                   initial={{ opacity: 0, y: 10, scale: 0.95 }}
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                  style={{ 
-                    position: 'absolute', top: 'calc(100% + 8px)', right: 0, 
-                    background: 'var(--bg-secondary)', border: '1px solid var(--border-strong)', 
-                    borderRadius: '16px', minWidth: '220px', padding: '8px', 
-                    boxShadow: '0 10px 40px rgba(0,0,0,0.1)', zIndex: 3000
-                  }}
+                  className="dropdown-menu"
                 >
-                  <div style={{ padding: '8px 12px', borderBottom: '1px solid var(--border-light)', marginBottom: '4px' }}>
-                    <div style={{ fontWeight: 700, fontSize: '0.9rem' }}>{user.name}</div>
-                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>{user.email}</div>
-                  </div>
-
-                  <button className="dropdown-item" onClick={openProfile}>
-                    <User size={16} /> My Profile
-                  </button>
-                  <button className="dropdown-item" onClick={openSettings}>
-                    <Settings size={16} /> Settings
-                  </button>
-                  <button className="dropdown-item" onClick={toggleTheme}>
-                    {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />} 
-                    {theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-                  </button>
-                  
-                  {user.email === 'admin' && (
-                    <button className="dropdown-item" onClick={() => { setDropdownOpen(false); openModal('System Audit Trail', <AuditLogViewer />); }} style={{ color: '#f5a623' }}>
-                      <ShieldAlert size={16} /> Audit Logs
-                    </button>
-                  )}
-                  
+                  <button className="dropdown-item" onClick={openProfile}><User size={16} /> Profile</button>
+                  <button className="dropdown-item" onClick={openSettings}><Settings size={16} /> Settings</button>
+                  <button className="dropdown-item" onClick={toggleTheme}>{theme === 'light' ? <Moon size={16} /> : <Sun size={16} />} Theme</button>
                   <div style={{ height: '1px', background: 'var(--border-light)', margin: '4px 0' }}></div>
-                  
-                  <button className="dropdown-item" onClick={handleLogout} style={{ color: 'var(--accent-red)' }}>
-                    <LogOut size={16} /> Logout
-                  </button>
+                  <button className="dropdown-item" onClick={handleLogout} style={{ color: 'var(--accent-red)' }}><LogOut size={16} /> Logout</button>
                 </motion.div>
               )}
             </AnimatePresence>
           </div>
-          
         </div>
       </nav>
 
-      {/* Basic Dropdown Item CSS */}
-      <style dangerouslySetInnerHTML={{__html: `
-        .dropdown-item {
-          display: flex; align-items: center; gap: 10px; width: 100%; border: none; 
-          background: none; padding: 10px 12px; border-radius: 8px; text-align: left; 
-          font-size: 0.9rem; font-weight: 500; cursor: pointer; color: var(--text-primary);
-          transition: background 0.2s;
-        }
-        .dropdown-item:hover {
-          background: var(--bg-primary);
-        }
-        .active-tab {
-          color: var(--accent-blue) !important;
-          background: rgba(15, 98, 254, 0.08) !important;
-          font-weight: 800 !important;
-          border-radius: 100px;
-        }
-      `}} />
-
-<<<<<<< HEAD
-      {/* 2. Page Content - Tabbed Routing */}
       <AnimatePresence mode="wait">
         {activeTab === 'dashboard' && (
-          <motion.div
-            key="dashboard"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-          >
-            {/* 2. Premium Hero Section */}
+          <motion.div key="dashboard" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
             <header className="hero-section fade-in">
               <div className="hero-tag">Pulse Command Hub v2.0</div>
-              <h1 className="hero-title">
-                Intelligence for the <span>Next Generation</span> of Engineers.
-              </h1>
-              <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
-                Track, analyze, and engage with IBM-related activity across UK & Ireland universities using transparent keyword classification and real-time sentiment analysis.
-              </p>
+              <h1 className="hero-title">Intelligence for the <span>Next Generation</span> of Engineers.</h1>
               <AIGlowSearch />
             </header>
 
             <main className="dashboard-grid fade-in">
-              {/* Left Column: Stats & Timeline */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
                 <div className="card">
-                  <h3 style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.5rem' }}>Total Tracked Engagements</h3>
-                  <div style={{ fontSize: '3rem', fontWeight: 800, letterSpacing: '-0.04em' }}>
-                    {(globalStats.total || 0).toLocaleString()}
-                  </div>
-                  <div style={{ color: '#34c759', fontWeight: 600, fontSize: '0.9rem', marginTop: '0.25rem' }}>
-                    {globalStats.trajectory} trajectory
-                  </div>
-                  <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    {Object.entries(globalStats.metrics).map(([key, val]) => (
-                      <div key={key} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                        <span style={{ color: 'var(--text-secondary)' }}>{key}</span>
-                        <span style={{ fontWeight: 600 }}>{val}</span>
-                      </div>
-                    ))}
-                  </div>
-                  <button onClick={() => setActiveTab('analytics')} className="nav-btn-primary" style={{ marginTop: '1.5rem', width: '100%', fontSize: '0.85rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px' }}>
-                    <BarChart3 size={16} /> Open Benchmark Matrix
-                  </button>
-=======
-      {/* 2. Premium Hero Section */}
-      <header className="hero-section fade-in">
-        <div className="hero-tag">Pulse Engine v2.0 Live</div>
-        <h1 className="hero-title">
-          Intelligence for the <span>Next Generation</span> of Engineers.
-        </h1>
-        <p style={{ fontSize: '1.25rem', color: 'var(--text-secondary)', maxWidth: '600px', margin: '0 auto', lineHeight: 1.6 }}>
-          Track, analyze, and engage with technical sentiment across universities in the UK & Ireland using cutting-edge HuggingFace models.
-        </p>
-
-        {/* 3. Glowing Advanced Search Box */}
-        <AIGlowSearch />
-      </header>
-
-      {/* 4. Dashboard Core */}
-      <main className="dashboard-grid fade-in">
-        
-        {/* Left Column: Stats & Timeline */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '24px' }}>
-          <div className="card">
-            <h3 style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontWeight: 600, marginBottom: '0.5rem' }}>Total Tracked Engagements</h3>
-            <div style={{ fontSize: '3rem', fontWeight: 800, letterSpacing: '-0.04em' }}>
-              {(globalStats.total || 0).toLocaleString()}
-            </div>
-            <div style={{ color: '#34c759', fontWeight: 600, fontSize: '0.9rem', marginTop: '0.25rem' }}>
-              {globalStats.trajectory} trajectory
-            </div>
-            
-            <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              {Object.entries(globalStats.metrics).map(([key, val]) => (
-                <div key={key} style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.9rem' }}>
-                  <span style={{ color: 'var(--text-secondary)' }}>{key}</span>
-                  <span style={{ fontWeight: 600 }}>{val}</span>
->>>>>>> parent of 3f7135a (huuge)
+                  <h3 style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontWeight: 600 }}>Total Tracked Engagements</h3>
+                  <div style={{ fontSize: '3.5rem', fontWeight: 800 }}>{globalStats.total.toLocaleString()}</div>
+                  <div style={{ color: '#34c759', fontWeight: 600 }}>{globalStats.trajectory} trajectory</div>
                 </div>
-                <div className="card" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <Activity size={18} color="var(--accent-blue)" /> Velocity Timeline
-                  </h3>
-                  <div style={{ flexGrow: 1, minHeight: '250px' }}>
-                    <TimelineChart filter={activeFilter} />
-                  </div>
+                <div className="card" style={{ flexGrow: 1 }}>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.5rem' }}><Activity size={18} color="var(--accent-blue)" /> Velocity Timeline</h3>
+                  <TimelineChart filter={activeFilter} />
                 </div>
               </div>
 
-              {/* Right Column: Interactive Map */}
               <div className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <MapPin size={18} color="var(--accent-red)" /> Engagement Topology
-                  </h3>
-                  <div className="filters-row" style={{ marginBottom: 0, flexWrap: 'wrap', gap: '8px' }}>
-                    {['Overall Map', 'technical', 'non_technical', 'unknown'].map(flt => (
-                      <button key={flt} className={`filter-chip ${activeFilter === flt ? 'active' : ''}`} onClick={() => setActiveFilter(flt)}>
-                        {flt.replace('_', ' ').charAt(0).toUpperCase() + flt.replace('_', ' ').slice(1)}
-                      </button>
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}><MapPin size={18} color="var(--accent-red)" /> Engagement Topology</h3>
+                  <div className="filters-row" style={{ marginBottom: 0 }}>
+                    {['Overall Map', 'technical', 'non_technical'].map(flt => (
+                      <button key={flt} className={`filter-chip ${activeFilter === flt ? 'active' : ''}`} onClick={() => setActiveFilter(flt)}>{flt.replace('_',' ')}</button>
                     ))}
                   </div>
                 </div>
-                <div style={{ flexGrow: 1, minHeight: '500px', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
+                <div style={{ flexGrow: 1, minHeight: '500px', borderRadius: '16px', overflow: 'hidden' }}>
                   <InteractiveMap activeFilter={activeFilter} onMarkerClick={handleMarkerClick} />
                 </div>
               </div>
             </main>
-
-            {/* Restored Analytics Matrix (The Charts) at bottom of dashboard tab */}
-            <div style={{ marginTop: '4rem' }}>
-              <BusinessAnalyticsGrid />
-            </div>
           </motion.div>
         )}
 
-<<<<<<< HEAD
         {activeTab === 'analytics' && (
-          <motion.div
-            key="analytics"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            style={{ padding: '8rem 2rem 4rem' }}
-          >
-            <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-              <div style={{ marginBottom: '3rem' }}>
-                <h2 style={{ fontSize: '2.5rem', fontWeight: 900, letterSpacing: '-0.02em' }}>Deep Analytics Matrix</h2>
-                <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>Multi-dimensional performance tracking across institutions and sentiment cohorts.</p>
-              </div>
-              <BusinessAnalyticsGrid />
-=======
-            <button 
-              onClick={() => navigate('/analytics/benchmark')}
-              className="nav-btn-primary" 
-              style={{ marginTop: '1.5rem', width: '100%', fontSize: '0.85rem' }}
-            >
-              Benchmark Institutions
-            </button>
-          </div>
-          
-          <div className="card" style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-               <Activity size={18} color="var(--accent-blue)" /> Velocity Timeline
-            </h3>
-            <div style={{ flexGrow: 1, minHeight: '250px' }}>
-              <TimelineChart filter={activeFilter} />
->>>>>>> parent of 3f7135a (huuge)
-            </div>
+          <motion.div key="analytics" initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -20 }} style={{ padding: '8rem 2rem 4rem' }}>
+            <BusinessAnalyticsGrid />
           </motion.div>
         )}
 
-<<<<<<< HEAD
         {activeTab === 'posts' && (
-          <motion.div
-            key="posts"
-            initial={{ opacity: 0, scale: 0.98 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.98 }}
-            style={{ padding: '8rem 2rem 4rem' }}
-          >
-            <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
-              <div style={{ marginBottom: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <h2 style={{ fontSize: '2rem', fontWeight: 800 }}>Global Activity Feed</h2>
-                  <p style={{ color: 'var(--text-secondary)' }}>Live stream of university engagements and social mentions.</p>
-                </div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <button className="filter-chip active">All Sources</button>
-                  <button className="filter-chip">Reddit</button>
-                  <button className="filter-chip">Twitter/X</button>
-                </div>
-              </div>
-              <PostFeed />
-=======
-        {/* Right Column: Interactive Map */}
-        <div className="card" style={{ padding: '24px', display: 'flex', flexDirection: 'column' }}>
-          
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <MapPin size={18} color="var(--accent-red)" /> Engagement Topology
-            </h3>
-            
-            <div className="filters-row" style={{ marginBottom: 0, flexWrap: 'wrap', gap: '8px' }}>
-              {[
-                'Overall Map', 'AI', 'Data Science', 'Design Thinking', 
-                'AI and Law', 'IBM SkillsBuild', 'Hackathons', 
-                'Open Source', 'Student Societies'
-              ].map(flt => (
-                <button 
-                  key={flt}
-                  className={`filter-chip ${activeFilter === flt ? 'active' : ''}`}
-                  onClick={() => setActiveFilter(flt)}
-                >
-                  {flt}
-                </button>
-              ))}
->>>>>>> parent of 3f7135a (huuge)
-            </div>
+          <motion.div key="posts" initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }} style={{ padding: '8rem 2rem 4rem', maxWidth: '1000px', margin: '0 auto' }}>
+             <PostFeed />
           </motion.div>
         )}
 
-<<<<<<< HEAD
         {activeTab === 'insights' && (
-          <motion.div
-            key="insights"
-            initial={{ opacity: 0, filter: 'blur(10px)' }}
-            animate={{ opacity: 1, filter: 'blur(0)' }}
-            exit={{ opacity: 0, filter: 'blur(10px)' }}
-            style={{ padding: '8rem 2rem 4rem' }}
-          >
-            <div style={{ maxWidth: '1400px', margin: '0 auto' }}>
-              <InsightsView />
-            </div>
+          <motion.div key="insights" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} style={{ padding: '8rem 2rem 4rem' }}>
+            <InsightsView />
           </motion.div>
         )}
       </AnimatePresence>
-=======
-          <div style={{ flexGrow: 1, minHeight: '400px', borderRadius: 'var(--radius-lg)', overflow: 'hidden', border: '1px solid var(--border-light)' }}>
-            <InteractiveMap activeFilter={activeFilter} onMarkerClick={handleMarkerClick} />
-          </div>
 
-        </div>
+      <PostDetailsPanel isOpen={panelOpen} onClose={() => setPanelOpen(false)} university={selectedUni} activeFilter={activeFilter} />
+      <NavModal isOpen={modalOpen} onClose={() => setModalOpen(false)} title={modalContent.title} content={modalContent.content} />
 
-      </main>
-      
-      {/* 5. New Expanded Insights Section (Business Analytics Upgrade) */}
-      <BusinessAnalyticsGrid />
->>>>>>> parent of 3f7135a (huuge)
-
-      {/* Detail Slide Panel */}
-      <PostDetailsPanel 
-        isOpen={panelOpen} 
-        onClose={() => setPanelOpen(false)} 
-        university={selectedUni} 
-        activeFilter={activeFilter}
-      />
-
-      {/* Nav Modal */}
-      <NavModal 
-        isOpen={modalOpen} 
-        onClose={() => setModalOpen(false)} 
-        title={modalContent.title} 
-        content={modalContent.content} 
-      />
-
+      <style dangerouslySetInnerHTML={{__html: `
+        .dropdown-menu {
+          position: absolute; top: calc(100% + 8px); right: 0; background: var(--bg-secondary);
+          border: 1px solid var(--border-strong); borderRadius: 16px; minWidth: 200px; padding: 8px;
+          boxShadow: 0 10px 40px rgba(0,0,0,0.1); zIndex: 3000;
+        }
+        .dropdown-item {
+          display: flex; align-items: center; gap: 10px; width: 100%; border: none; background: none;
+          padding: 10px 12px; border-radius: 8px; text-align: left; font-size: 0.9rem; font-weight: 500;
+          cursor: pointer; color: var(--text-primary); transition: background 0.2s;
+        }
+        .dropdown-item:hover { background: var(--bg-primary); }
+        .active-tab { color: var(--accent-blue) !important; background: rgba(15, 98, 254, 0.08) !important; font-weight: 800 !important; border-radius: 100px; }
+      `}} />
     </div>
   );
 }
