@@ -470,6 +470,57 @@ import httpx
 _query_cache = {}
 CACHE_TTL = 300  # Cache for 5 minutes
 
+async def get_university_intelligence_summary(university: str) -> dict:
+    """
+    Advanced Aggregation: Returns a high-fidelity intelligence profile for a specific institution,
+    including sentiment volatility, category distribution, and engagement velocity.
+    """
+    # 1. Category Distribution (Technical vs Outreach)
+    pipeline_split = [
+        {"$match": {"universities": university}},
+        {"$group": {"_id": "$engagement_type", "count": {"$sum": 1}}}
+    ]
+    split_res = await posts_collection.aggregate(pipeline_split).to_list(None)
+    category_split = {r["_id"]: r["count"] for r in split_res}
+    
+    # 2. Sentiment Evolution (Longitudinal)
+    pipeline_sent = [
+        {"$match": {"universities": university}},
+        {"$group": {
+            "_id": { "$dateToString": { "format": "%Y-%m-%d", "date": "$created_at" } },
+            "avg_sentiment": {"$avg": "$sentiment_score"},
+            "volume": {"$sum": 1}
+        }},
+        {"$sort": {"_id": 1}}
+    ]
+    sent_res = await posts_collection.aggregate(pipeline_sent).to_list(30)
+    
+    # 3. Regional Benchmark (Compare against others in same region)
+    # First find this uni's region
+    geo_doc = await geo_collection.find_one({"university": university})
+    region = geo_doc["region"] if geo_doc else "Unknown"
+    
+    avg_region_sentiment = 0.0
+    if region != "Unknown":
+        pipeline_reg = [
+            {"$match": {"region": region}},
+            {"$group": {"_id": None, "avg": {"$avg": "$sentiment_score"}}}
+        ]
+        reg_res = await posts_collection.aggregate(pipeline_reg).to_list(1)
+        if reg_res:
+            avg_region_sentiment = reg_res[0]["avg"]
+
+    return {
+        "university": university,
+        "region": region,
+        "category_split": category_split,
+        "sentiment_history": [{"date": r["_id"], "score": round(r["avg_sentiment"], 3), "volume": r["volume"]} for r in sent_res],
+        "benchmarks": {
+            "regional_avg_sentiment": round(avg_region_sentiment, 3),
+            "total_engagements": sum(category_split.values())
+        }
+    }
+
 async def ask_natural_language(query_text: str) -> dict:
     """
     Advanced LLM Integration: Uses Gemini 2.5 Flash to provide dynamic, intelligent answers 

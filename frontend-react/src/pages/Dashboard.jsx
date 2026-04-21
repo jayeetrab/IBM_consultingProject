@@ -80,15 +80,21 @@ const BusinessAnalyticsGrid = () => {
     <div style={{ padding: '0 2rem 4rem', maxWidth: '1400px', margin: '-1rem auto 0' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(600px, 1fr))', gap: '32px' }}>
 
-        {/* 1. Sentiment Pie */}
-        <div className="card fade-in" style={{ padding: '32px', display: 'flex', flexDirection: 'column' }}>
+        {/* 1. Sentiment Matrix (Clickable Drill-down) */}
+        <div 
+          className="card fade-in" 
+          onClick={() => navigate('/analytics/sentiment')}
+          style={{ padding: '32px', display: 'flex', flexDirection: 'column', cursor: 'pointer', transition: 'transform 0.2s' }}
+          onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
+          onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
+        >
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
               <PieChartIcon size={20} color="#f5a623" />
-              Global Sentiment Ratio
+              Real-time Sentiment Matrix
             </h3>
             <div style={{ display: 'flex', alignItems: 'center', gap: '4px', color: '#34c759', fontWeight: 700, fontSize: '0.85rem' }}>
-              <TrendingUp size={14} /> +4.2% stability
+              <TrendingUp size={14} /> +4.2% Stability
             </div>
           </div>
           <div style={{ height: '280px' }}>
@@ -98,72 +104,63 @@ const BusinessAnalyticsGrid = () => {
                   {pieData.map((entry, index) => <Cell key={index} fill={entry.color} />)}
                 </Pie>
                 <Tooltip cornerRadius={12} />
-                <Legend verticalAlign="bottom" height={36} />
               </PieChart>
             </ResponsiveContainer>
           </div>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginTop: '1.5rem', borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem', lineHeight: 1.5 }}>
-            <strong>Executive Takeaway:</strong> Reputation spread remains positive, with a notable decrease in neutral mentions compared to the previous sprint.
+          <p style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', marginTop: '1.5rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Click for Longitudinal Evolution →
           </p>
         </div>
 
-        {/* 2. Top Universities */}
+        {/* 2. Institutional Performance Matrix (Clickable Drill-down) */}
         <div className="card fade-in" style={{ padding: '32px', display: 'flex', flexDirection: 'column' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' }}>
             <h3 style={{ fontSize: '1.2rem', fontWeight: 800, display: 'flex', alignItems: 'center', gap: '8px' }}>
               <BarChart3 size={20} color="var(--accent-blue)" />
-              Top Institutional Performers
+              Institutional Competency Map
             </h3>
-            <div style={{ color: 'var(--accent-blue)', fontWeight: 700, fontSize: '0.85rem' }}>
-              Ranked by Volume
+            <div style={{ color: 'var(--accent-blue)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase' }}>
+              Real-Time Rank
             </div>
           </div>
           <div style={{ height: '280px' }}>
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={barData}>
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-secondary)' }} />
+                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: 'var(--text-secondary)', fontWeight: 600 }} />
                 <Tooltip cursor={{ fill: 'rgba(0,0,0,0.03)' }} />
-                <Bar dataKey="engagements" fill="var(--accent-blue)" radius={[4, 4, 0, 0]} />
+                <Bar 
+                  dataKey="engagements" 
+                  fill="var(--accent-blue)" 
+                  radius={[4, 4, 0, 0]} 
+                  onClick={(data) => navigate(`/university/${encodeURIComponent(data.name)}`)}
+                  style={{ cursor: 'pointer' }}
+                />
               </BarChart>
             </ResponsiveContainer>
           </div>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginTop: '1.5rem', borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem', lineHeight: 1.5 }}>
-             The <strong>University of Bristol</strong> currently leads in technical engagement, while <strong>Imperial</strong> shows the highest growth in outreach activity.
+          <p style={{ fontSize: '0.75rem', color: 'var(--accent-blue)', marginTop: '1.5rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            Select Bar to Inspect Profile →
           </p>
         </div>
 
-        {/* 3. Source Distribution */}
-        <div className="card fade-in" style={{ padding: '32px', display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '24px' }}>Data Provenance distribution</h3>
-          <div style={{ height: '300px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <PieChart>
-                <Pie data={sourceData} innerRadius={70} outerRadius={100} paddingAngle={5} dataKey="value">
-                  {sourceData.map((entry, index) => <Cell key={index} fill={['#0f62fe', '#fa4d56', '#8d8d8d'][index % 3]} />)}
-                </Pie>
-                <Tooltip />
-                <Legend />
-              </PieChart>
-            </ResponsiveContainer>
+        {/* 3. Replacement for Keywords: Strategic Competency Clusters */}
+        <div className="card fade-in" style={{ padding: '32px', display: 'flex', flexDirection: 'column', gridColumn: 'span 2' }}>
+          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '24px', display: 'flex', alignItems: 'center', gap: '10px' }}>
+             <Activity size={20} color="#8a3ffc" /> Strategic Competency Matrix
+          </h3>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+            {keywordData.length > 0 ? keywordData.slice(0, 8).map((kw, i) => (
+              <div key={i} style={{ padding: '20px', borderRadius: '12px', background: 'var(--bg-primary)', border: '1px solid var(--border-light)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <div>
+                   <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-tertiary)', textTransform: 'uppercase', marginBottom: '4px' }}>Theme {i+1}</div>
+                   <div style={{ fontSize: '1rem', fontWeight: 800 }}>{kw.keyword}</div>
+                </div>
+                <div style={{ fontWeight: 900, color: 'var(--accent-blue)', fontSize: '1.2rem' }}>{kw.count}</div>
+              </div>
+            )) : <p>Analyzing patterns...</p>}
           </div>
-        </div>
-
-        {/* 4. Keywords */}
-        <div className="card fade-in" style={{ padding: '32px', display: 'flex', flexDirection: 'column' }}>
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 800, marginBottom: '24px' }}>Keyword Density Mapping</h3>
-          <div style={{ height: '300px' }}>
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={keywordData} layout="vertical">
-                <XAxis type="number" hide />
-                <YAxis dataKey="keyword" type="category" width={100} tick={{ fontSize: 10 }} />
-                <Tooltip />
-                <Bar dataKey="count" fill="var(--accent-blue)" opacity={0.6} radius={[0, 4, 4, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
-          </div>
-          <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginTop: '1rem', borderTop: '1px solid var(--border-light)', paddingTop: '1rem' }}>
-            <strong>Executive Note:</strong> Key technical terms linked to recruitment intensity and graduate society chatter.
+          <p style={{ fontSize: '0.8rem', color: 'var(--text-tertiary)', marginTop: '2rem', borderTop: '1px solid var(--border-light)', paddingTop: '1.5rem' }}>
+            <strong>Intelligence Summary:</strong> These technical clusters represent the highest engagement density across the campus ecosystem.
           </p>
         </div>
 

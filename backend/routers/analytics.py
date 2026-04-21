@@ -128,3 +128,13 @@ async def get_insight_sections():
         "community": [{"university": r["_id"], "count": r["count"]} for r in comm_res],
         "regional": [{"region": r["_id"], "count": r["engagements"]} for r in region_res]
     }
+
+@router.get("/university/{name}")
+async def university_intelligence(name: str):
+    from backend.database.db_manager import get_university_intelligence_summary, get_university_posts
+    summary = await get_university_intelligence_summary(name)
+    recent_posts = await get_university_posts(name, limit=10)
+    return {
+        "summary": summary,
+        "recent_posts": recent_posts
+    }
