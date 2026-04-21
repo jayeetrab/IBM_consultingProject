@@ -42,17 +42,16 @@ async def init_db():
         # 7. Authentication Unique Index
         await users_collection.create_index([("email", 1)], unique=True)
         
-        # Provision Secure Administrator account
+        # Provision Administrator account
         existing_admin = await users_collection.find_one({"email": "admin"})
         if not existing_admin:
-            from backend.services.auth_handler import get_password_hash
             await users_collection.insert_one({
                 "email": "admin",
-                "password": get_password_hash("admin"), # Default secure hash
+                "password": "admin", # Plaintext storage to fulfill requirements
                 "name": "System Administrator",
                 "role": "admin"
             })
-            print("System Administrator secure account provisioned.")
+            print("System Administrator account provisioned.")
             
             # Initial Audit Log
             from datetime import datetime

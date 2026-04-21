@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Sparkles, MapPin, Activity, Download, Settings, X, ExternalLink, Upload, ShieldAlert, User, Moon, Sun, LogOut, ChevronDown, PieChart as PieChartIcon, BarChart3 } from 'lucide-react';
+import { Sparkles, MapPin, Activity, Download, Settings, X, ExternalLink, Upload, ShieldAlert, User, Moon, Sun, LogOut, ChevronDown, PieChart as PieChartIcon, BarChart3, TrendingUp } from 'lucide-react';
 import { PieChart, Pie, Cell, BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import api from '../services/api';
 import InteractiveMap from '../components/InteractiveMap';
@@ -771,6 +771,11 @@ function Dashboard() {
                 </div>
               </div>
             </main>
+
+            {/* Restored Analytics Matrix (The Charts) at bottom of dashboard tab */}
+            <div style={{ marginTop: '4rem' }}>
+              <BusinessAnalyticsGrid />
+            </div>
           </motion.div>
         )}
 
