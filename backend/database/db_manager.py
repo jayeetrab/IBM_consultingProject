@@ -347,15 +347,15 @@ async def get_all_posts_list() -> list[dict]:
     posts = await cursor.to_list(length=None)
     
     return [{
-        "university": p.get("university"),
-        "title": p.get("title"),
-        "author": p.get("author"),
-        "category": p.get("category"),
-        "sentiment": p.get("sentiment_label"),
-        "sentiment_score": p.get("sentiment_score"),
-        "score": p.get("score"),
-        "created_at": p.get("created_at"),
-        "url": p.get("url")
+        "university": p.get("universities", ["Unknown"])[0] if p.get("universities") else "Unknown",
+        "title": p.get("text", "")[:100] + ("..." if len(p.get("text", "")) > 100 else ""),
+        "author": p.get("source", "Unknown"),
+        "category": p.get("category", "Other"),
+        "sentiment": p.get("sentiment_label", "neutral"),
+        "sentiment_score": p.get("sentiment_score", 0.0),
+        "score": p.get("score", 0),
+        "created_at": p.get("created_at").isoformat() if hasattr(p.get("created_at"), "isoformat") else str(p.get("created_at")),
+        "url": p.get("url", "")
     } for p in posts]
 
 
@@ -502,8 +502,11 @@ Provide a highly polished, short response formatted nicely with markdown (e.g., 
             response.raise_for_status()
             data = response.json()
             
-            # Extract content from Gemini response
-            answer_text = data['candidates'][0]['content']['parts'][0]['text']
+            # Extract content from Gemini response safely
+            try:
+                answer_text = data['candidates'][0]['content']['parts'][0]['text']
+            except (KeyError, IndexError):
+                answer_text = "I received a response from the intelligence layer, but I couldn't parse the insights. Please try a different query."
             
             # Save to Cache!
             _query_cache[query_key] = (time.time(), answer_text)

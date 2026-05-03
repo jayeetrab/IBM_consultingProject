@@ -50,12 +50,12 @@ async def get_global_stats():
     
     total = await posts_collection.count_documents({})
     
-    # Track exactly what the user wants to see easily
-    design_thinking = await posts_collection.count_documents({"category": "Design Thinking"})
+    # Track exactly what the user wants to see easily - using actual DB categories
     ai_data = await posts_collection.count_documents({"category": {"$in": ["AI", "Data Science"]}})
-    skills_build = await posts_collection.count_documents({"category": "IBM SkillsBuild"})
-    hackathons = await posts_collection.count_documents({"category": "Hackathons"})
+    cloud_quantum = await posts_collection.count_documents({"category": {"$in": ["Cloud", "Quantum"]}})
+    software_dev = await posts_collection.count_documents({"category": "Software Development"})
     open_source = await posts_collection.count_documents({"category": "Open Source"})
+    cyber = await posts_collection.count_documents({"category": "Cybersecurity"})
     
     # Calculate a mock trajectory for the UI
     trajectory = "+14.2%" if total > 100 else "+5.1%"
@@ -64,11 +64,11 @@ async def get_global_stats():
         "total": total,
         "trajectory": trajectory,
         "metrics": {
-            "Design Thinking": design_thinking,
             "AI & Data Science": ai_data,
-            "IBM SkillsBuild": skills_build,
-            "Hackathons": hackathons,
-            "Open Source": open_source
+            "Cloud & Quantum": cloud_quantum,
+            "Software Dev": software_dev,
+            "Open Source": open_source,
+            "Cybersecurity": cyber
         }
     }
 
@@ -76,10 +76,10 @@ async def get_global_stats():
 async def get_insight_sections():
     from backend.database.connection import posts_collection
     
-    # Tech Interest: Top Universities for specific categories
-    tech_cats = ["Design Thinking", "AI", "Data Science", "AI and Law"]
+    # Tech Interest: Top Universities for AI and Data Science
+    tech_cats = ["AI", "Data Science"]
     pipeline_tech = [
-        {"$match": {"category": {"$in": tech_cats}}},
+        {"$match": {"category": {"$in": tech_cats}, "universities": {"$ne": []}}},
         {"$unwind": "$universities"},
         {"$group": {"_id": "$universities", "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},
@@ -87,10 +87,10 @@ async def get_insight_sections():
     ]
     tech_res = await posts_collection.aggregate(pipeline_tech).to_list(5)
     
-    # Active Locations: Societies, Hackathons, Outreach
-    active_cats = ["Student Societies", "Hackathons", "Outreach Events"]
+    # Emerging & Community: Quantum, Open Source, AI and Law
+    active_cats = ["Quantum", "Open Source", "AI and Law"]
     pipeline_active = [
-        {"$match": {"category": {"$in": active_cats}}},
+        {"$match": {"category": {"$in": active_cats}, "universities": {"$ne": []}}},
         {"$unwind": "$universities"},
         {"$group": {"_id": "$universities", "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},
@@ -98,10 +98,9 @@ async def get_insight_sections():
     ]
     active_res = await posts_collection.aggregate(pipeline_active).to_list(5)
     
-    # Community Correlation: SkillsBuild, Open Source
-    comm_cats = ["IBM SkillsBuild", "Open Source"]
+    # Overall High Performers (Fallback for empty sections)
     pipeline_comm = [
-        {"$match": {"category": {"$in": comm_cats}}},
+        {"$match": {"universities": {"$ne": []}}},
         {"$unwind": "$universities"},
         {"$group": {"_id": "$universities", "count": {"$sum": 1}}},
         {"$sort": {"count": -1}},

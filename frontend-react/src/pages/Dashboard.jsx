@@ -31,11 +31,14 @@ const BusinessAnalyticsGrid = () => {
     .then(([sentRes, structRes]) => {
       // Map Sentiment for PieChart
       const sRaw = sentRes.data;
-      const formattedPie = sRaw.map(s => ({
-        name: s.label.charAt(0).toUpperCase() + s.label.slice(1),
-        value: s.count,
-        color: s.label === 'positive' ? '#34c759' : s.label === 'negative' ? 'var(--accent-red)' : 'var(--text-tertiary)'
-      }));
+      const formattedPie = sRaw.map(s => {
+        const label = s.label || 'unknown';
+        return {
+          name: label.charAt(0).toUpperCase() + label.slice(1),
+          value: s.count,
+          color: label === 'positive' ? '#34c759' : label === 'negative' ? 'var(--accent-red)' : 'var(--text-tertiary)'
+        };
+      });
       setPieData(formattedPie);
 
       // Map Categories for BarChart
@@ -491,9 +494,9 @@ function Dashboard() {
             
             <div className="filters-row" style={{ marginBottom: 0, flexWrap: 'wrap', gap: '8px' }}>
               {[
-                'Overall Map', 'AI', 'Data Science', 'Design Thinking', 
-                'AI and Law', 'IBM SkillsBuild', 'Hackathons', 
-                'Open Source', 'Student Societies'
+                'Overall Map', 'AI', 'Data Science', 'Cloud', 'Quantum', 
+                'Software Development', 'Cybersecurity', 
+                'Open Source', 'AI and Law'
               ].map(flt => (
                 <button 
                   key={flt}
